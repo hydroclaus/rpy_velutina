@@ -21,3 +21,10 @@ generally, I am following [the approach described here](https://suntechlite.com/
 Some useful background information, even though not specifically on the ws281x but a similar teaching thing [can be found here: Pure Python library to drive APA102 LED stripes; Use with Raspberry Pi.](https://github.com/tinue/apa102-pi)
 
 With "Hyperion", selecting colours is more interactive: [Jetzt wird’s bunt! Ambilight-Software Hyperion in Openelec installieren – Teil 2 – PowerPi](http://powerpi.de/jetzt-wirds-bunt-ambilight-software-hyperion-in-openelec-installieren-teil-2/)
+
+## Hardware Setup
+
+- red and blue are connected to external power
+- blue is also connected to ground `PIN3`
+- yellow is in `GPIO 10 MOSI (SPI 0)`
+- green is in `GPIO 11 SCLK (SPI0)`
