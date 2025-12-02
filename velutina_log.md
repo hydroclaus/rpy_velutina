@@ -22,6 +22,8 @@ Some useful background information, even though not specifically on the ws281x b
 
 With "Hyperion", selecting colours is more interactive: [Jetzt wird’s bunt! Ambilight-Software Hyperion in Openelec installieren – Teil 2 – PowerPi](http://powerpi.de/jetzt-wirds-bunt-ambilight-software-hyperion-in-openelec-installieren-teil-2/)
 
+This looks interesting: [vanshksingh/Pi5Neo: Library to Control Neopixel on Raspberry Pi 5 using python](https://github.com/vanshksingh/Pi5Neo)
+
 ## Hardware Setup
 
 - red and blue are connected to external power
