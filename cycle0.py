@@ -12,4 +12,6 @@ while True:
     pixels.fill((0, 255, 0))  # Green
     time.sleep(1)
     pixels.fill((0, 0, 255))  # Blue
+    time.sleep(1)
+    pixels.fill((0, 255, 0))
 time.sleep(1)
