@@ -14,5 +14,3 @@
 
 the third and latest version seems the most recent [link to docs](https://docs.circuitpython.org/projects/neopixel/en/latest/)
 
-
-lu-thoh-then-whym-ji-jip
