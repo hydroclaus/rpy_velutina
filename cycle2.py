@@ -2,6 +2,8 @@ import time
 import board
 import neopixel
 
+"""https://docs.micropython.org/en/latest/esp8266/tutorial/neopixel.html#"""
+
 np = neopixel.NeoPixel(board.D10, 25, bpp=4)
 
 def demo(np):
