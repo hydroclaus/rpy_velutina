@@ -14,4 +14,5 @@ leds = adafruit_ws2801.WS2801(oclock, odata, numleds, brightness=bright, auto_wr
 
 # fills all blue
 # Use an RGB Tuple
-leds.fill((255, 0, 0))
+leds.fill((0, 0, 0))
+leds.show()
