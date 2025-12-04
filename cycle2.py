@@ -10,14 +10,17 @@ def demo(np):
     n = np.n
 
     # cycle
+    print("cycle")
     for i in range(4 * n):
         for j in range(n):
+            print(i,j)
             np[j] = (0, 0, 0)
         np[i % n] = (255, 255, 255)
         np.write()
-        time.sleep_ms(25)
+        time.sleep(0.5)
 
     # bounce
+    print("bounce")
     for i in range(4 * n):
         for j in range(n):
             np[j] = (0, 0, 128)
@@ -26,9 +29,10 @@ def demo(np):
         else:
             np[n - 1 - (i % n)] = (0, 0, 0)
         np.write()
-        time.sleep_ms(60)
+        time.sleep(0.5)
 
     # fade in/out
+    print("fade in/out")
     for i in range(0, 4 * 256, 8):
         for j in range(n):
             if (i // 256) % 2 == 0:
