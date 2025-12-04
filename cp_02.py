@@ -3,6 +3,7 @@
 
 ### Based on example from
 ### https://github.com/adafruit/Adafruit_CircuitPython_DotStar/tree/master/examples
+# https://learn.adafruit.com/12mm-led-pixels/circuitpython-usage
 
 import random
 import time
