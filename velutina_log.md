@@ -26,6 +26,12 @@ This looks interesting: [vanshksingh/Pi5Neo: Library to Control Neopixel on Rasp
 
 ## Hardware Setup
 
+### Pixels
+
+- I have Adafruit 12mm Diffuse Thin Digital RGB LED Pixel (strand of 25), bought at [berrybase](https://www.berrybase.de/en/adafruit-12mm-diffuse-thin-digital-rgb-led-pixel-strand-of-25?srsltid=AfmBOorEbchmwN7pkotycAA0bx2FmjInpKA0F4iBzgphC3qz--NRGHUE).
+- this is their description at [Adafruit](https://learn.adafruit.com/12mm-led-pixels?view=all). Here it says that they do contain a **WS2801 LED** driver chip. It also says they would work with the [Adafruit Circuit Python WS2801 module](https://github.com/adafruit/Adafruit_CircuitPython_WS2801)
+
+### Raspberry
 - red and blue are connected to external power
 - blue is also connected to ground `PIN3`
 - yellow is in `GPIO 10 MOSI (SPI 0)`
