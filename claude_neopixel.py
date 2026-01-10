@@ -1,5 +1,7 @@
 """
-I'll help you create Python code for displaying moving rainbow colors on your 12mm LED pixels with a Raspberry Pi Pico 2. These are likely WS2812B (NeoPixel) LEDs.Rainbow LED Pixels - Raspberry Pi Pico 2Code import machine
+I'll help you create Python code for displaying moving rainbow colors on your 12mm LED pixels with a Raspberry Pi Pico 2. These are likely WS2812B (NeoPixel) LEDs.Rainbow LED Pixels - Raspberry Pi Pico 2Code 
+
+import machine
 import neopixel
 import time
 
