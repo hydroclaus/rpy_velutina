@@ -103,7 +103,7 @@ def start_tcp_server(port=SERVER_PORT):
                     #append_csv(elapsed, co2, temperature, humidity)
                     line = f'{elapsed:.2f},{co2:f},{temperature:0.2f},{humidity:0.2f}\n'
                     client.send(line.encode('utf-8'))
-                time.sleep(5)
+                time.sleep(60 * 5)
         except OSError as exc:
             print('Client disconnected:', exc)
         finally:
