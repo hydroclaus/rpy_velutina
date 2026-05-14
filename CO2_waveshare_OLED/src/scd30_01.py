@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2020 by Bryan Siepert, written for Adafruit Industries
 #
 # SPDX-License-Identifier: Unlicense
+import os
 import time
 
 # for SCD-30
@@ -19,13 +20,17 @@ except ImportError as exc:
 
 
 # for WLAN
-# Wi-Fi credentials
-SSID = 'Wlandrian'
-PASSWORD = 'wAnk-od-O-quaS-on-va'
+SSID = os.getenv('CIRCUITPY_WIFI_SSID')
+PASSWORD = os.getenv('CIRCUITPY_WIFI_PASSWORD')
 
 
 
 def connect_wifi():
+    if not SSID or not PASSWORD:
+        raise RuntimeError(
+            'Missing Wi-Fi credentials. Set CIRCUITPY_WIFI_SSID and CIRCUITPY_WIFI_PASSWORD in settings.toml.'
+        )
+
     print(f'Connecting to Wi-Fi SSID: {SSID}')
     wifi.radio.connect(SSID, PASSWORD)
 
