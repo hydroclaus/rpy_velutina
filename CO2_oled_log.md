@@ -1,5 +1,7 @@
 # CO2 sensor with OLED display
 
+[General overview: Getting Started with Raspberry Pi Pico and CircuitPython | Adafruit Learning System](https://learn.adafruit.com/getting-started-with-raspberry-pi-pico-circuitpython/overview)
+
 ## CO2 sensor
 - [Arduino | Adafruit SCD-30 - NDIR CO2 Temperature and Humidity Sensor | Adafruit Learning System](https://learn.adafruit.com/adafruit-scd30/arduino)
 
@@ -17,3 +19,4 @@ There are two ways to operate
     - prerequisites: 
 		- on the pico: `board`, `busio`, `adafruit_scd30`, `wifi`, `socketpool`
 		- on the server: `asyncio`
+		- in order to manage prerequisites on the pico, circup is a nice tool, and can be installed on the server via `pip3 install circup`. Then, for example, the [asyncio library can be easily installed](https://docs.circuitpython.org/projects/asyncio/en/latest/)
