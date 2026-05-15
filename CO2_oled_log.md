@@ -1,5 +1,10 @@
 # CO2 sensor with OLED display
 
+## todo:
+- [calibration](https://learn.adafruit.com/adafruit-scd30/field-calibration)
+
+
+
 [General overview: Getting Started with Raspberry Pi Pico and CircuitPython | Adafruit Learning System](https://learn.adafruit.com/getting-started-with-raspberry-pi-pico-circuitpython/overview)
 
 ## CO2 sensor
@@ -20,3 +25,14 @@ There are two ways to operate
 		- on the pico: `board`, `busio`, `adafruit_scd30`, `wifi`, `socketpool`
 		- on the server: `asyncio`
 		- in order to manage prerequisites on the pico, circup is a nice tool, and can be installed on the server via `pip3 install circup`. Then, for example, the [asyncio library can be easily installed](https://docs.circuitpython.org/projects/asyncio/en/latest/)
+		
+### Cable Connections
+
+| cable  | CO2 sensor; SCD30 | pico Pin         |          |
+| ------ | ----------------- | ---------------- | -------- |
+| red    | VIN               | GP 36            | 3V3(OUT) |
+| brown  | GND               | GP 38 (or other) | GND      |
+| yellow | SCL               | GP 5             | I2C0 SCL |
+| blue   | SDA               | GP 4             | I2C0 SDA |
+|        | RDY               | empty            |          |
+|        | 3Vo               | empty            |          |
