@@ -2,3 +2,9 @@
 /CO2_waveshare_OLED/figs
 /.vscode
 /settings.toml
+/.DS_Store
+/CO2_waveshare_OLED/.DS_Store
+/CO2_waveshare_OLED/data/sensor_data_2026-05-14 10:16:59.csv
+/CO2_waveshare_OLED/data/sensor_data_2026-05-14 10:20:22.csv
+/CO2_waveshare_OLED/data/sensor_data_2026-05-14 10:24:55.csv
+/CO2_waveshare_OLED/data/sensor_data_2026-05-14 10:34:34.csv
