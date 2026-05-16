@@ -1,7 +1,52 @@
-from machine import Pin, SPI, I2C, SoftI2C
-import framebuf
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Hello
+"""
+from secrets import SSID, PASSWORD, SERVER_PORT
+
+import os
 import time
+import network
+import socket
+
+from machine import Pin, SPI, I2C
+import framebuf
 from scd30 import SCD30
+
+__author__ = "Claus Haslauer (mail@planetwater.org)"
+__version__ = "$Revision: 0.2 $"
+__date__ = "datetime.date(2026,5,16)"
+__copyright__ = "Copyright (c) 2026 Claus Haslauer"
+__license__ = "Python"
+
+DELTA_T_MINUTES = 5
+
+def connect_wifi():
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+
+    if not SSID or SSID == 'your_ssid_here':
+        raise RuntimeError('Missing Wi-Fi credentials. Set SSID and PASSWORD in the script.')
+
+    print(f'Connecting to Wi-Fi SSID: {SSID}')
+    wlan.connect(SSID, PASSWORD)
+
+    # Wait up to 15 seconds for connection
+    for _ in range(30):
+        if wlan.isconnected():
+            break
+        time.sleep(0.5)
+        print('.', end='')
+
+    if not wlan.isconnected():
+        raise RuntimeError('Failed to connect to Wi-Fi')
+
+    print()
+    print('Connected to Wi-Fi')
+    print('IP address:', wlan.ifconfig()[0])
+    return wlan
+
 
 # ---- OLED Driver (SH1107, SPI) ----
 class OLED_1inch3(framebuf.FrameBuffer):
@@ -48,59 +93,100 @@ class OLED_1inch3(framebuf.FrameBuffer):
             for num in range(16):
                 self.write_data(self.buffer[page * 16 + num])
 
-# ---- Init OLED ----
-oled = OLED_1inch3()
 
-# ---- Init SCD-30 via I2C ----
-i2c = I2C(0, sda=Pin(4), scl=Pin(5), freq=50000)
-scd = SCD30(i2c, 0x61)
-
-print("Waiting for SCD-30 to boot...")
-time.sleep(8)
-
-print("I2C scan:", [hex(addr) for addr in i2c.scan()])
-started = False
-for attempt in range(1, 6):
-    try:
-        scd.start_continous_measurement() # note: Waveshare typo, "continous" not "continuous"
-        print("SCD-30 continuous measurement started")
-        started = True
-        break
-    except OSError as err:
-        print("SCD-30 start failed (attempt {}): {}".format(attempt, err))
-        time.sleep(2)
-
-if not started:
-    print("Proceeding without explicit start command; sensor may already be running.")
-    print("Trying SoftI2C fallback...")
-    i2c = SoftI2C(sda=Pin(4), scl=Pin(5), freq=50000)
-    print("SoftI2C scan:", [hex(addr) for addr in i2c.scan()])
+def init_scd30():
+    i2c = I2C(0, sda=Pin(4), scl=Pin(5), freq=10000)
     scd = SCD30(i2c, 0x61)
-    for attempt in range(1, 4):
+
+    print("Waiting for SCD-30 to boot...")
+    time.sleep(3)
+
+    for attempt in range(1, 6):
         try:
             scd.start_continous_measurement()
-            print("SCD-30 start succeeded on SoftI2C")
-            break
+            print("SCD-30 continuous measurement started")
+            return scd
         except OSError as err:
-            print("SoftI2C start failed (attempt {}): {}".format(attempt, err))
+            print(f"SCD-30 start failed (attempt {attempt}): {err}")
             time.sleep(2)
 
-# ---- Main Loop ----
-print("Waiting for SCD-30...")
-time.sleep(2)
+    raise RuntimeError("Could not start SCD-30 after 5 attempts")
 
-while True:
-    try:
-        if scd.get_status_ready() == 1:
-            co2, temp, hum = scd.read_measurement()
-            print(f"CO2: {co2:.1f} ppm | Temp: {temp:.1f}C | Hum: {hum:.1f}%")
-            oled.fill(0)
-            oled.text("Air Quality", 20, 0, oled.white)
-            oled.text("CO2:{:5.0f} ppm".format(co2), 0, 20, oled.white)
-            oled.text("Tmp:{:5.1f} C".format(temp),  0, 36, oled.white)
-            oled.text("Hum:{:5.1f} %".format(hum),   0, 52, oled.white)
-            oled.show()
-    except OSError as err:
-        print("SCD-30 I2C runtime error:", err)
-        time.sleep(2)
-    time.sleep(2)
+
+def main():
+    # ---- Connect Wi-Fi ----
+    wlan = connect_wifi()
+    ip = wlan.ifconfig()[0]
+
+    # ---- Init OLED ----
+    oled = OLED_1inch3()
+    oled.fill(0)
+    oled.text("Connecting...", 0, 28, oled.white)
+    oled.show()
+
+    # ---- Init SCD-30 ----
+    scd = init_scd30()
+    time_start = time.time()
+
+    # ---- Show IP on OLED ----
+    oled.fill(0)
+    oled.text("IP:", 0, 0, oled.white)
+    oled.text(ip, 0, 12, oled.white)
+    oled.text(f"Port:{SERVER_PORT}", 0, 24, oled.white)
+    oled.show()
+
+    # ---- Start TCP server ----
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server.bind(('0.0.0.0', SERVER_PORT))
+    server.listen(1)
+    print(f'TCP server listening on {ip}:{SERVER_PORT}')
+
+    while True:
+        try:
+            client, addr = server.accept()
+            print('Client connected:', addr)
+            try:
+                while True:
+                    # Wait for data to be ready
+                    for _ in range(10):
+                        if scd.get_status_ready() == 1:
+                            break
+                        time.sleep(0.5)
+
+                    co2, temp, hum = scd.read_measurement()
+
+                    if co2 is not None:
+                        elapsed = time.time() - time_start
+
+                        # Update OLED
+                        oled.fill(0)
+                        oled.text("CO2:{:5.0f} ppm".format(co2), 0, 0,  oled.white)
+                        oled.text("Tmp:{:5.1f} C".format(temp),  0, 20, oled.white)
+                        oled.text("Hum:{:5.1f} %".format(hum),   0, 36, oled.white)
+                        oled.text("t:{:.0f} s".format(elapsed),  0, 52, oled.white)
+                        oled.show()
+
+                        print(f"CO2: {co2:.1f} ppm | Temp: {temp:.1f} C | Hum: {hum:.1f} %")
+
+                        # Send to client as CSV
+                        line = f'{elapsed:.2f},{co2:.2f},{temp:.2f},{hum:.2f}\n'
+                        client.send(line.encode('utf-8'))
+
+                    # SCD-30 default update interval is ~2 seconds
+                    print("sleep {} minutes...".format(DELTA_T_MINUTES))
+                    time.sleep(DELTA_T_MINUTES * 60)
+
+            except OSError as err:
+                print("Read error:", err)
+            finally:
+                client.close()
+                print('Client disconnected')
+
+        except OSError as err:
+            print("Server error:", err)
+            time.sleep(1)
+
+
+if __name__ == '__main__':
+    main()
