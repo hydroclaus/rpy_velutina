@@ -9,6 +9,7 @@
 
 ## CO2 sensor
 - [Arduino | Adafruit SCD-30 - NDIR CO2 Temperature and Humidity Sensor | Adafruit Learning System](https://learn.adafruit.com/adafruit-scd30/arduino)
+- hersteller: https://sensirion.com/products/catalog/SCD30
 
 
 ## OLED display
