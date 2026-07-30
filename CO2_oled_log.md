@@ -1,4 +1,4 @@
-# CO2 sensor with OLED display
+  # CO2 sensor with OLED display
 
 ## todo:
 - [calibration](https://learn.adafruit.com/adafruit-scd30/field-calibration)

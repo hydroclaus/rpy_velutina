@@ -2,7 +2,8 @@ import asyncio
 import datetime
 
 # TCP server configuration
-SERVER_IP = "192.168.178.82"
+#SERVER_IP = "192.168.178.82"
+SERVER_IP = "192.168.48.255"
 SERVER_PORT = 8080
 RECONNECT_DELAY_SECONDS = 3
 
