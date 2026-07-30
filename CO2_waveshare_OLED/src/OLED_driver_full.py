@@ -12,6 +12,8 @@ import socket
 
 from machine import Pin, SPI, I2C
 import framebuf
+
+# rpy_velutina/CO2_waveshare_OLED/src/micropython-scd30-master/scd30.py
 from scd30 import SCD30
 
 __author__ = "Claus Haslauer (mail@planetwater.org)"
