@@ -1,21 +1,10 @@
-# SPDX-FileCopyrightText: 2020 by Bryan Siepert, written for Adafruit Industries
-#
-# SPDX-License-Identifier: Unlicense
+
 import os
 import time
+import network
+import socket
 
-# for SCD-30
-try:
-    import board
-    import busio
-    import adafruit_scd30
-    import wifi
-    import socketpool
-
-except ImportError as exc:
-    raise RuntimeError(
-        'This script must run on a CircuitPython device with wifi, socketpool, and adafruit_scd30 libraries installed.'
-    ) from exc
+from secrets import SSID, PASSWORD, SERVER_PORT
 
 # for server (sending data)
 # todo: 
@@ -25,29 +14,37 @@ except ImportError as exc:
 #  - make connection to WLAN more robust
 
 
-# for WLAN
-SSID = os.getenv('CIRCUITPY_WIFI_SSID')
-PASSWORD = os.getenv('CIRCUITPY_WIFI_PASSWORD')
-SERVER_PORT = int(os.getenv('SENSOR_TCP_PORT', '8080'))
+# # for WLAN
+# SSID = os.getenv('CIRCUITPY_WIFI_SSID')
+# PASSWORD = os.getenv('CIRCUITPY_WIFI_PASSWORD')
+# SERVER_PORT = int(os.getenv('SENSOR_TCP_PORT', '8080'))
 
 
 
 def connect_wifi():
-    wifi.radio.tx_power = 15  # max power for better range, but more power consumption
-    
-    if not SSID or not PASSWORD:
-        raise RuntimeError(
-            'Missing Wi-Fi credentials. Set CIRCUITPY_WIFI_SSID and CIRCUITPY_WIFI_PASSWORD in settings.toml.'
-        )
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+
+    if not SSID or SSID == 'your_ssid_here':
+        raise RuntimeError('Missing Wi-Fi credentials. Set SSID and PASSWORD in the script.')
 
     print(f'Connecting to Wi-Fi SSID: {SSID}')
-    wifi.radio.connect(SSID, PASSWORD)
+    wlan.connect(SSID, PASSWORD)
 
-    while not wifi.radio.ipv4_address:
-        time.sleep(0.1)
+    # Wait up to 15 seconds for connection
+    for _ in range(30):
+        if wlan.isconnected():
+            break
+        time.sleep(0.5)
+        print('.', end='')
 
+    if not wlan.isconnected():
+        raise RuntimeError('Failed to connect to Wi-Fi')
+
+    print()
     print('Connected to Wi-Fi')
-    print('IP address:', wifi.radio.ipv4_address)
+    print('IP address:', wlan.ifconfig()[0])
+    return wlan
 
 
 def init_sensor():
@@ -119,4 +116,4 @@ def start_tcp_server(port=SERVER_PORT):
 if __name__ == '__main__':
     connect_wifi()
     # prepare_csv()
-    start_tcp_server()
+    #start_tcp_server()
