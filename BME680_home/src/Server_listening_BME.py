@@ -1,119 +1,53 @@
+import asyncio
+import datetime
+from pathlib import Path
 
-import os
-import time
-import network
-import socket
+# TCP server configuration
+# die IP ADRESSE des Pico (des "Satelliten")
+SERVER_IP = "192.168.178.58"
+#SERVER_IP = "192.168.48.255"
+SERVER_PORT = 8080
+RECONNECT_DELAY_SECONDS = 3
 
-from secrets import SSID, PASSWORD, SERVER_PORT
-
-# for server (sending data)
-# todo: 
-#  - influxdb
-#  - calibrate sensor
-#  - run while raspberry ssh is disconnected (TMUX https://ttt.bartificer.net/book.html#ttt38)
-#  - make connection to WLAN more robust
-
-
-# # for WLAN
-# SSID = os.getenv('CIRCUITPY_WIFI_SSID')
-# PASSWORD = os.getenv('CIRCUITPY_WIFI_PASSWORD')
-# SERVER_PORT = int(os.getenv('SENSOR_TCP_PORT', '8080'))
+now = datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')
+data_dir = Path(__file__).resolve().parent / 'data'
+data_dir.mkdir(parents=True, exist_ok=True)
+DATA_FILE = data_dir / f'sensor_data_{now}.csv'
 
 
 
-def connect_wifi():
-    wlan = network.WLAN(network.STA_IF)
-    wlan.active(True)
-
-    if not SSID or SSID == 'your_ssid_here':
-        raise RuntimeError('Missing Wi-Fi credentials. Set SSID and PASSWORD in the script.')
-
-    print(f'Connecting to Wi-Fi SSID: {SSID}')
-    wlan.connect(SSID, PASSWORD)
-
-    # Wait up to 15 seconds for connection
-    for _ in range(30):
-        if wlan.isconnected():
-            break
-        time.sleep(0.5)
-        print('.', end='')
-
-    if not wlan.isconnected():
-        raise RuntimeError('Failed to connect to Wi-Fi')
-
-    print()
-    print('Connected to Wi-Fi')
-    print('IP address:', wlan.ifconfig()[0])
-    return wlan
+with open(DATA_FILE, 'w') as fp:
+        fp.write('datetime,DEVICE_ID,seconds_since_start,Temp [C],pres[hPa],relHum [%],gas[]\n')
 
 
-def init_sensor():
-    # SCD-30 has tempremental I2C with clock stretching, datasheet recommends
-    # starting at 50KHz
-    # i2c = busio.I2C(board.SCL, board.SDA, frequency=50000)
-    i2c = busio.I2C(board.GP5, board.GP4, frequency=50000)
-    scd = adafruit_scd30.SCD30(i2c)
 
-    return scd, time.monotonic()
-
-
-def read_measurement(scd, start_time):
-    # Return None when no fresh sample is available yet.
-    if not scd.data_available:
-        return None
-
-    elapsed = time.monotonic() - start_time
-    co2 = scd.CO2
-    temperature = scd.temperature
-    humidity = scd.relative_humidity
-
-    print('time elapsed: seconds since start', elapsed)
-    print(f'    CO2: {co2:f} PPM')
-    print(f'    Temperature: {temperature:0.2f} degrees C')
-    print(f'    Humidity: {humidity:0.2f} % rH')
-    print('')
-
-    return elapsed, co2, temperature, humidity
-
-
-def append_csv(elapsed, co2, temperature, humidity):
-    with open('/sensor_data.csv', 'a') as fp:
-        fp.write(f'{elapsed:.2f},{co2:f},{temperature:0.2f},{humidity:0.2f}\n')
-
-
-def prepare_csv():
-    with open('/sensor_data.csv', 'w') as fp:
-        fp.write('datetime,CO2 [PPM],Temp [C],relHum [%]\n')
-
-
-def start_tcp_server(port=SERVER_PORT):
-    pool = socketpool.SocketPool(wifi.radio)
-    server = pool.socket(pool.AF_INET, pool.SOCK_STREAM)
-    server.bind(('0.0.0.0', port))
-    server.listen(1)
-    print(f'TCP server listening on {wifi.radio.ipv4_address}:{port}')
-
-    scd, start_time = init_sensor()
-
+async def receive_temperature():
     while True:
-        client, addr = server.accept()
-        print('Client connected:', addr)
+        writer = None
         try:
+            reader, writer = await asyncio.open_connection(SERVER_IP, SERVER_PORT)
+            print(f"Connected to {SERVER_IP}:{SERVER_PORT}")
+
             while True:
-                sample = read_measurement(scd, start_time)
-                if sample is not None:
-                    elapsed, co2, temperature, humidity = sample
-                    #append_csv(elapsed, co2, temperature, humidity)
-                    line = f'{elapsed:.2f},{co2:f},{temperature:0.2f},{humidity:0.2f}\n'
-                    client.send(line.encode('utf-8'))
-                time.sleep(60 * 5)
-        except OSError as exc:
-            print('Client disconnected:', exc)
+                data = await reader.readline()
+                if not data:
+                    print("Server closed connection")
+                    break
+
+                line = data.decode(errors='replace').strip()
+                print(f"Received: {line}")
+                with open(DATA_FILE, 'a') as fp:
+                    fp.write(f'{datetime.datetime.now()}, {line}\n')
+
+        except (ConnectionError, OSError, asyncio.TimeoutError) as err:
+            print(f"Connection error: {err}")
         finally:
-            client.close()
+            if writer is not None:
+                writer.close()
+                await writer.wait_closed()
 
+        print(f"Reconnecting in {RECONNECT_DELAY_SECONDS}s...")
+        await asyncio.sleep(RECONNECT_DELAY_SECONDS)
 
-if __name__ == '__main__':
-    connect_wifi()
-    # prepare_csv()
-    #start_tcp_server()
+# Run the client
+asyncio.run(receive_temperature())
