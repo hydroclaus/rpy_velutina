@@ -1,0 +1,12 @@
+name: bme680
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pandas
+  - numpy
+  - matplotlib
+  - ipykernel
+  - pip
+  - pip:
+      - influxdb-client
