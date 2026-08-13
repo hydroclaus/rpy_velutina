@@ -8,9 +8,9 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 
 # InfluxDB connection settings
 INFLUX_URL = "http://localhost:8086"
-INFLUX_TOKEN = "<token>"
-INFLUX_ORG = "<org>"
-INFLUX_BUCKET = "bme680"
+INFLUX_TOKEN = "VRXxOsHsqnucFSelWqcIxSUNO4GLMJHlI5btrPn8Efz5GDNw3k1dNOxiXbd9WCQaBv2b5Vky5DBAhP2EHpL-kg=="
+INFLUX_ORG = "CPH"
+INFLUX_BUCKET = "SensorsAmadeus34"
 
 DATA_DIR = Path(__file__).resolve().parent / 'data'
 
@@ -24,7 +24,7 @@ def migrate_file(csv_path: Path, write_api) -> int:
     write_api.write(
         bucket=INFLUX_BUCKET,
         record=df,
-        data_frame_measurement_name="bme680",
+        data_frame_measurement_name="SensorsAmadeus34",
         data_frame_tag_columns=["DEVICE_ID"],
     )
     return len(df)
