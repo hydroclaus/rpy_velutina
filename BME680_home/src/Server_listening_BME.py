@@ -61,11 +61,12 @@ async def receive_temperature():
                 if not data:
                     print("Server closed connection")
                     break
+                now = datetime.datetime.now()
 
                 line = data.decode(errors='replace').strip()
-                print(f"Received: {line}")
+                print(f"Received @ {now.strftime('%Y-%m-%d %H:%M:%S')}: {line}")
                 with open(DATA_FILE, 'a') as fp:
-                    fp.write(f'{datetime.datetime.now()}, {line}\n')
+                    fp.write(f'{now}, {line}\n')
                 try:
                     write_to_influx(line)
                 except (ValueError, ConnectionError, OSError) as err:
