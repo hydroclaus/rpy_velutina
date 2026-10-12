@@ -1,6 +1,7 @@
 import network
 import socket
 import time
+import ubinascii
 from machine import Pin, I2C
 import BME280
 from secrets import SSID, PASSWORD, SERVER_PORT
@@ -42,6 +43,13 @@ def main():
     # ---- Connect Wi-Fi ----
     wlan = connect_wifi()
     ip = wlan.ifconfig()[0]
+    mac_raw = wlan.config('mac')
+    mac = ubinascii.hexlify(mac_raw, ':').decode()
+    
+    print()
+    print("IP: ", ip)
+    print("MAC: ", mac)
+    print()
 
     # ---- Start TCP server ----
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

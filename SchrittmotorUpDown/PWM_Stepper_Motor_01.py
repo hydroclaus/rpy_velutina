@@ -11,9 +11,9 @@
 from time import sleep
 import RPi.GPIO as GPIO
 #
-PUL = 17  # Stepper Drive Pulses
-DIR = 27  # Controller Direction Bit (High for Controller default / LOW to Force a Direction Change).
-ENA = 22  # Controller Enable Bit (High to Enable / LOW to Disable).
+PUL = 35#17  # Stepper Drive Pulses
+DIR = 33#27  # Controller Direction Bit (High for Controller default / LOW to Force a Direction Change).
+ENA = 37#22  # Controller Enable Bit (High to Enable / LOW to Disable).
 # DIRI = 14  # Status Indicator LED - Direction
 # ENAI = 15  # Status indicator LED - Controller Enable
 #
@@ -53,12 +53,12 @@ print('number of Cycles to Run set to ' + str(cycles))
 #
 def forward():
     GPIO.output(ENA, GPIO.HIGH)
-    GPIO.output(ENAI, GPIO.HIGH)
+    #GPIO.output(ENAI, GPIO.HIGH)
     print('ENA set to HIGH - Controller Enabled')
     #
     sleep(.5) # pause due to a possible change direction
     GPIO.output(DIR, GPIO.LOW)
-    GPIO.output(DIRI, GPIO.LOW)
+    #GPIO.output(DIRI, GPIO.LOW)
     print('DIR set to LOW - Moving Forward at ' + str(delay))
     print('Controller PUL being driven.')
     for x in range(durationFwd): 
@@ -67,7 +67,7 @@ def forward():
         GPIO.output(PUL, GPIO.LOW)
         sleep(delay)
     GPIO.output(ENA, GPIO.LOW)
-    GPIO.output(ENAI, GPIO.LOW)
+    #GPIO.output(ENAI, GPIO.LOW)
     print('ENA set to LOW - Controller Disabled')
     sleep(.5) # pause for possible change direction
     return
@@ -75,12 +75,12 @@ def forward():
 #
 def reverse():
     GPIO.output(ENA, GPIO.HIGH)
-    GPIO.output(ENAI, GPIO.HIGH)
+    #GPIO.output(ENAI, GPIO.HIGH)
     print('ENA set to HIGH - Controller Enabled')
     #
     sleep(.5) # pause due to a possible change direction
     GPIO.output(DIR, GPIO.HIGH)
-    GPIO.output(DIRI, GPIO.HIGH)
+    #GPIO.output(DIRI, GPIO.HIGH)
     print('DIR set to HIGH - Moving Backward at ' + str(delay))
     print('Controller PUL being driven.')
     #
@@ -90,7 +90,7 @@ def reverse():
         GPIO.output(PUL, GPIO.LOW)
         sleep(delay)
     GPIO.output(ENA, GPIO.LOW)
-    GPIO.output(ENAI, GPIO.LOW)
+    #GPIO.output(ENAI, GPIO.LOW)
     print('ENA set to LOW - Controller Disabled')
     sleep(.5) # pause for possible change direction
     return
