@@ -13,7 +13,7 @@ DEVICE_ID = 'Pico_Werkstatt_1'
 #PORT = SERVER_PORT
 
 
-DELTA_T_MINUTES = 2
+DELTA_T_MINUTES = 0.25
 
 
 def connect_wifi():
@@ -77,8 +77,8 @@ def main():
                     elapsed = time.time() - time_start
 
                     # Get sensor readings, temp in °C, presssure in hPa, and humidity in %
-                    temp = str(round(bme.temperature, 2)) # + ' C'
-                    pres = str(round(bme.pressure, 2)) #+ ' hPa'
+                    temp = str(round(float(bme.temperature), 2)) # + ' C'
+                    pres = str(round(float(bme.pressure), 2)) #+ ' hPa'
                     print(temp)
 
                     # Prepare data to send (omit time, will be added by server)

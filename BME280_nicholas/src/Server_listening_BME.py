@@ -7,7 +7,8 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 
 # TCP server configuration
 # die IP ADRESSE des Pico (des "Satelliten")
-SERVER_IP = "192.168.48.116"
+#SERVER_IP = "192.168.48.148"
+SERVER_IP = "192.168.48.246"
 #SERVER_IP = "192.168.48.255"
 SERVER_PORT = 8080
 RECONNECT_DELAY_SECONDS = 3
@@ -29,13 +30,13 @@ DATA_FILE = data_dir / f'sensor_data_{now}.csv'
 
 
 with open(DATA_FILE, 'w') as fp:
-        fp.write('datetime,DEVICE_ID,seconds_since_start,Temp [C],pres[hPa],relHum [%],gas[]\n')
+    fp.write('datetime,DEVICE_ID,seconds_since_start,Temp [C],pres [hPa]\n')
 
 
 def write_to_influx(line: str) -> None:
-    # line format: DEVICE_ID,seconds_since_start,Temp [C],pres[hPa],relHum [%],gas[]
+    # line format: DEVICE_ID,seconds_since_start,Temp [C],pres [hPa]
     fields = [part.strip() for part in line.split(',')]
-    device_id, seconds_since_start, temp_c, pres_hpa = fields
+    device_id,seconds_since_start, temp_c, pres_hpa = fields
     point = (
         Point(INFLUX_BUCKET)
         .tag("DEVICE_ID", device_id)
@@ -64,9 +65,11 @@ async def receive_temperature():
                 line = data.decode(errors='replace').strip()
                 print(f"Received @ {now.strftime('%Y-%m-%d %H:%M:%S')}: {line}")
                 with open(DATA_FILE, 'a') as fp:
-                    fp.write(f'{now}, {line}\n')
+                    fp.write(f'{now},{line}\n')
                 try:
+                    print("Trying to write data to InfluxDB...")
                     write_to_influx(line)
+                    print("Data written to InfluxDB")
                 except (ValueError, ConnectionError, OSError) as err:
                     print(f"InfluxDB write error: {err}")
 
