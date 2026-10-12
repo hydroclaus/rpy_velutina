@@ -7,11 +7,7 @@ from secrets import SSID, PASSWORD, SERVER_PORT
 
 
 # Constants
-DEVICE_ID = 'Pico_Werkstatt_1'
-
-#SERVER_IP = '192.168.178.47'
-#PORT = SERVER_PORT
-
+DEVICE_ID = 'Pico_Werkstatt_2'
 
 DELTA_T_MINUTES = 0.25
 
@@ -74,7 +70,7 @@ def main():
                     bme = BME280.BME280(i2c=i2c)
 
                        
-                    elapsed = time.time() - time_start
+                    seconds_since_start = time.time() - time_start
 
                     # Get sensor readings, temp in °C, presssure in hPa, and humidity in %
                     temp = str(round(float(bme.temperature), 2)) # + ' C'
@@ -82,9 +78,9 @@ def main():
                     print(temp)
 
                     # Prepare data to send (omit time, will be added by server)
-                    line = f"{DEVICE_ID},{elapsed:.2f},{float(temp[:-1]):.2f},{float(pres[:-3]):.2f}\n"
+                    line = f"{DEVICE_ID},{seconds_since_start:.2f},{float(temp[:-1]):.2f},{float(pres[:-3]):.2f}\n"
 
-                    # Send to client as CSV
+                    # Send to client as CSV, encoded as bytes
                     client.send(line.encode('utf-8'))
 
                     # SCD-30 default update interval is ~2 seconds
