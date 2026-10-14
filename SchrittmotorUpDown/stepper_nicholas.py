@@ -11,7 +11,7 @@ GPIO.setmode(GPIO.BOARD)
 DIR = 33 # Direction (forward/backward)
 PUL = 35 # Puls frequency (speed)
 ENA = 37 # "Enable" --> Clutch (pressed (ENA on), no force --> neutral (motor off)... loose (ENA off), force --> activation (motor on))
-ENDSTOP = 8
+ENDSTOP = 8 # Pin for light barrier (endstop)
 
 DIR_Left = GPIO.HIGH
 DIR_Right = GPIO.LOW
