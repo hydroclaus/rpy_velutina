@@ -1,6 +1,9 @@
 """
 https://www.heimkino-praxis.de/leinwand-maskierung-schrittmotor-steuerung/
 """
+
+"192000 Schritte fuer einen kompletten Durchgang"
+
 import RPi.GPIO as GPIO
 import time
 import sys

@@ -41,3 +41,12 @@ From the amazon description
 - [Raspberry Pi, Python, and a TB6600 Stepper Motor Driver : 9 Steps - Instructables](https://www.instructables.com/Raspberry-Pi-Python-and-a-TB6600-Stepper-Motor-Dri/)`
 - [Schrittmotor-Steuerung mit TB6600-Treiber und Raspberry Pi](https://www.heimkino-praxis.de/leinwand-maskierung-schrittmotor-steuerung/)
 - [Praxisbeispiele | Maxx](https://www.maxx-gmbh.com/produkte-sortiment-qualitaet-innovation/praxisbeispiele-loesungen-aus-der-realitaet/)
+
+10000 Schritte (Steps) entspricht ~ 3,13 mm zurueckgelegter Strecke
+20000 ~ 6,26 mm
+30000 ~ 9,38 mm
+40000 ~ 12,505 mm
+50000 ~ 15,625 mm
+
+--> ~ 3200 Schritte pro cm zurueckgelegter Strecke
+

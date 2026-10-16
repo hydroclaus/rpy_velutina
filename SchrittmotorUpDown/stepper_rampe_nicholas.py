@@ -27,7 +27,7 @@ MIN_RPM = 250
 MAX_RPM = 800
 
 # maximale Schrittzahl, die sich der Motor vom Nullpunkt weg bewegen darf
-MAX_STEPS = 5000
+MAX_STEPS = 192000
 
 # Frequenzberechnung
 stepsPerRevolution = 360 / STEP_ANGLE
@@ -38,21 +38,24 @@ maxFrequency = 1 / (MIN_RPM / 60 * stepsPerRevolution)
 rampSlope = (maxFrequency - minFrequency) / RAMP_LENGTH
 
 def getCurrentPosition ():
+
     try:
-        f = open(".position", "r")
+        f = open("/home/claus/Repository/rpy_velutina/SchrittmotorUpDown/.position", "r")
         steps = int(f.read())
         f.close()
         return steps
-    except IOError:
+    except:
         return 0
 
 def setCurrentPosition (steps):
-    f = open(".position", "w+");
+
+    f = open("/home/claus/Repository/rpy_velutina/SchrittmotorUpDown/.position", "w+");
     f.write(str(steps))
     f.close()
 
 # dreht den Motor absolut an eine bestimmte Position
 def moveTo (position):
+
     if (position < 0):
         position = 0
     if (position > MAX_STEPS):
@@ -65,6 +68,7 @@ def moveTo (position):
 
 # dreht den Motor relativ um eine bestimmte Anzahl Schritte
 def moveBy (steps):
+
     GPIO.output(ENA, ENA_Locked)
 
     currentFreqency = maxFrequency
@@ -78,9 +82,11 @@ def moveBy (steps):
         steps = currentPosition * -1
 
     for i in range(abs(steps)):
-
+        # if i in [x for x in range(0, abs(steps), 100)]:
+        #     print(currentFreqency)
+        
         # sofort stoppen, wenn sich der Motor über
-        # die obere Grenze hinaus bewegen würde
+        # die obere Grenze hinaus bewegen würde(0, abs(steps), 10)
         if (steps >= 0 and currentPosition >= MAX_STEPS):
             GPIO.output(ENA, ENA_Released)
             setCurrentPosition(currentPosition)
@@ -101,7 +107,7 @@ def moveBy (steps):
 
         # Schritt ausführen
         GPIO.output(PUL, GPIO.HIGH)
-        time.sleep(currentFreqency / 2)
+        time.sleep(currentFreqency / 2) # Hohe currentFrequency --> laengere Pause --> langsamere Drehung\Bewegung
         
         GPIO.output(PUL, GPIO.LOW)
         time.sleep(currentFreqency / 2)
