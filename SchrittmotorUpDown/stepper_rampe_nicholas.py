@@ -68,7 +68,7 @@ def moveTo (position):
 
 # dreht den Motor relativ um eine bestimmte Anzahl Schritte
 def moveBy (steps):
-
+    start = time.perf_counter()
     GPIO.output(ENA, ENA_Locked)
 
     currentFreqency = maxFrequency
@@ -135,6 +135,10 @@ def moveBy (steps):
 
     setCurrentPosition(currentPosition)
     GPIO.output(ENA, ENA_Released)
+    
+    ende = time.perf_counter()
+    dauer = ende - start
+    print(f"Zeit: {round(dauer, 2)}s")
 
     return currentPosition
 
@@ -143,10 +147,18 @@ if (len(sys.argv) != 2):
     print("Fehlender Parameter: Anzahl Schritte");
     sys.exit();
 
+# MOVEBY:
 steps = int(sys.argv[1])
 print("Schritte: " + str(steps))
 
 # Funktion moveBy() mit dem Parameter füttern
-# probiere auch: moveTo()
 currentPosition = moveBy(steps)
 print("Erreichte Position: " + str(currentPosition))
+
+# MOVETO:
+# position = int(sys.argv[1])
+# print("Gewaehlte Position: " + str(position))
+
+# Funktion moveTo() mit dem Parameter füttern
+# currentPosition = moveTo(position)
+# print("Erreichte Position: " + str(currentPosition))

@@ -50,3 +50,19 @@ From the amazon description
 
 --> ~ 3200 Schritte pro cm zurueckgelegter Strecke
 
+ohne Rampe:
+1000 Schritte a 1000 rpm --> 0,55 s
+1000 Schritte a 800 rpm --> 0,61 s
+1000 Schritte a 600 rpm --> 0,72 s
+1000 Schritte a 400 rpm --> 0,96 s
+1000 Schritte a 200 rpm --> 1,98 s
+1000 Schritte a 100 rpm --> 3,32 s
+1000 Schritte a 50 rpm --> 6,19 s
+1000 Schritte a 10 rpm --> 30,18 s
+1000 Schritte a 5 rpm --> 60,23 s
+1000 Schritte a 2,5 rpm --> 120,22 s
+1000 Schritte a 1 rpm --> 300,24 s
+
+
+
+Ziel: ca. 12 cm pro h
