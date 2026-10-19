@@ -48,7 +48,7 @@ From the amazon description
 40000 ~ 12,505 mm
 50000 ~ 15,625 mm
 
---> ~ 3200 Schritte pro cm zurueckgelegter Strecke
+--> ~ 3200 Schritte pro cm zurückgelegter Strecke
 
 ohne Rampe:
 1000 Schritte a 1000 rpm --> 0,55 s
