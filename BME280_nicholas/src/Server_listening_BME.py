@@ -7,7 +7,7 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 
 # TCP server configuration
 # die IP ADRESSE des Pico (des "Satelliten")
-SERVER_IP = "192.168.48.246"
+SERVER_IP = "192.168.179.9"
 SERVER_PORT = 8080
 RECONNECT_DELAY_SECONDS = 3
 
