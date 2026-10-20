@@ -17,6 +17,8 @@ def connect_wifi():
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
 
+    # wlan.ifconfig((PICO_IP, SUBNET, GATEWAY, DNS)) # Ausprobieren, ob damit feste IP-Adresse möglich ist
+
     if not SSID or SSID == 'your_ssid_here':
         raise RuntimeError('Missing Wi-Fi credentials. Set SSID and PASSWORD in the script.')
 
