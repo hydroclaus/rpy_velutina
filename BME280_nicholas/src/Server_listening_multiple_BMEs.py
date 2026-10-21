@@ -8,7 +8,7 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 # TCP server configuration
 # die IP ADRESSE des Pico (des "Satelliten")
 # SERVER_IP = "192.168.48.246"
-SERVER_IPS = ["192.168.179.8", "192.168.179.9"] # ['192.168.48.148', '192.168.48.158', '192.168.48.246', '192.168.48.156', '192.168.48.27', '192.168.48.133', '192.168.48.192', '192.168.48.118']
+SERVER_IPS = ["192.168.179.8"] #, "192.168.179.9"] # ['192.168.48.148', '192.168.48.158', '192.168.48.246', '192.168.48.156', '192.168.48.27', '192.168.48.133', '192.168.48.192', '192.168.48.118']
 SERVER_PORT = 8080
 RECONNECT_DELAY_SECONDS = 3
 
@@ -63,7 +63,12 @@ async def receive_temperature(ip: str):
 
             while True:
                 # Read the data until break line point (\n)
-                data = await reader.readline()
+                # try statement: if no data received, break and reconnect
+                # timeout has to be longer than DELTA_T_MINUTES from Server (Pico)!!!!!!!!!!!!
+                try:
+                    data = await asyncio.wait_for(reader.readline(), timeout=15.0)
+                except:
+                    break
                 if not data:
                     print("Server closed connection")
                     break
