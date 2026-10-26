@@ -151,10 +151,12 @@ def moveBy (steps):
 
 
 durations = []
-rpm_to_check = [rpm for rpm in np.arange(0.25, 5.75, 0.25)]
-steps = 3200 # 1cm
+rpm_to_check = [rpm for rpm in np.arange(5, 0, -0.25)]
+steps = 320 # 0.1cm
+start_position = getCurrentPosition()
 
-print("Schritte für Messung: " + str(steps) + ", entspricht ca. 1cm")
+print("Schritte für Messung: " + str(steps) + ", entspricht ca. " + str(steps/3200) + " cm")
+print("Position: ", start_position)
 
 for rpm in rpm_to_check:
     MIN_RPM = rpm
@@ -168,13 +170,21 @@ for rpm in rpm_to_check:
     print("Aktuelle RPM: " + str(rpm))
 
     # Funktion moveBy() mit dem Parameter füttern
+    
     currentPosition, dauer = moveBy(steps)
     durations.append(dauer)
+    MIN_RPM = 800
+    maxFrequency = 1 / (MIN_RPM / 60 * stepsPerRevolution)
+    time.sleep(1)
     currentPosition, dauer = moveBy(-steps)
+    time.sleep(1)
     print()
 
 print("Messwerte speichern...")
-with open("rpm_time_relation.txt", "w") as f:
+print(rpm_to_check)
+print(durations)
+# name: rpm_time_relation_{starting position}_{steps per measurement}
+with open(f"/home/claus/Repository/rpy_velutina/SchrittmotorUpDown/rpm_time_relation_{start_position}_{steps}.txt", "w") as f:
     f.write("RPM,Duration\n")
     for rpm, duration in zip(rpm_to_check, durations):
         f.writelines(f"{rpm},{duration}\n")
