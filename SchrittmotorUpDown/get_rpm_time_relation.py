@@ -151,8 +151,8 @@ def moveBy (steps):
 
 
 durations = []
-rpm_to_check = [rpm for rpm in np.arange(5, 0, -0.25)]
-steps = 320 # 0.1cm
+rpm_to_check = [rpm for rpm in np.arange(5.25, 0, -1)]
+steps = 1600 # 0.5cm
 start_position = getCurrentPosition()
 
 print("Schritte für Messung: " + str(steps) + ", entspricht ca. " + str(steps/3200) + " cm")
