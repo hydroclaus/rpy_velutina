@@ -184,7 +184,7 @@ print("Messwerte speichern...")
 print(rpm_to_check)
 print(durations)
 # name: rpm_time_relation_{starting position}_{steps per measurement}
-with open(f"/home/claus/Repository/rpy_velutina/SchrittmotorUpDown/rpm_time_relation_{start_position}_{steps}.txt", "w") as f:
+with open(f"/home/claus/Repository/rpy_velutina/SchrittmotorUpDown/Messungen/rpm_time_relation_{start_position}_{steps}.txt", "w") as f:
     f.write("RPM,Duration\n")
     for rpm, duration in zip(rpm_to_check, durations):
         f.writelines(f"{rpm},{duration}\n")

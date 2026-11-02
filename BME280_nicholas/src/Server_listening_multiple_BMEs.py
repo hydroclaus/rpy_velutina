@@ -66,7 +66,7 @@ async def receive_temperature(ip: str):
                 # try statement: if no data received, break and reconnect
                 # timeout has to be longer than DELTA_T_MINUTES from Server (Pico)!!!!!!!!!!!!
                 try:
-                    data = await asyncio.wait_for(reader.readline(), timeout=15.0)
+                    data = await asyncio.wait_for(reader.readline(), timeout=60.0)
                 except:
                     break
                 if not data:
