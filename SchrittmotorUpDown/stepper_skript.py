@@ -7,7 +7,7 @@ import time
 
 GPIO.setmode(GPIO.BOARD)
 
-# TB6600 Treiber Setup
+# TB6600 Driver Setup
 DIR = 33
 PUL = 35
 ENA = 37
@@ -26,17 +26,20 @@ GPIO.setup(ENA, GPIO.OUT)
 # Motor Setup
 STEP_ANGLE = 1.8 # degree
 
-# maximale Schrittzahl, die sich der Motor vom Nullpunkt weg bewegen darf
+# maximum steps the motor can move from 0 position
 MAX_STEPS = 192000
 
-# Frequenzberechnung
 stepsPerRevolution = 360 / STEP_ANGLE
 
 ######################################################################
 ############################## FUNCTIONS #############################
 
-def getCurrentPosition ():
+def readInstructions ():
+    with open(".sequence", "r") as f:
+        tasks = f.readlines()
+    return tasks
 
+def getCurrentPosition ():
     try:
         f = open(".position", "r")
         steps = int(f.read())
@@ -46,18 +49,17 @@ def getCurrentPosition ():
         return 0
 
 def setCurrentPosition (steps):
-
     f = open(".position", "w+");
     f.write(str(steps))
     f.close()
 
-# dreht den Motor relativ um eine bestimmte Anzahl Schritte
+# turn motor by number of steps
 def moveBy (steps):
     GPIO.output(ENA, ENA_Locked)
 
     currentPosition = getCurrentPosition()
 
-    # relative Schrittzahl vorberechnen, die sich der Motor bewegen muss
+    # calculate relative steps
     targetPosition = currentPosition + steps
     if (targetPosition > MAX_STEPS):
         steps = MAX_STEPS - currentPosition
@@ -69,34 +71,32 @@ def moveBy (steps):
 
     for i in range(abs(steps)):
         
-        # sofort stoppen, wenn sich der Motor über
-        # die obere Grenze hinaus bewegen würde(0, abs(steps), 10)
+        # stop if upper limit reached
         if (steps >= 0 and currentPosition >= MAX_STEPS):
             GPIO.output(ENA, ENA_Released)
             setCurrentPosition(currentPosition)
             return currentPosition
 
-        # sofort stoppen, wenn sich der Motor über
-        # die untere Grenze hinaus bewegen würde
+        # stop if lower limit reached
         if (steps < 0 and currentPosition <= 0):
             GPIO.output(ENA, ENA_Released)
             setCurrentPosition(currentPosition)
             return currentPosition
 
-        # Richtung festlegen
+        # set direction to move (up or down)
         if (steps < 0):
             GPIO.output(DIR, DIR_Right)
         else:
             GPIO.output(DIR, DIR_Left)
 
-        # Schritt ausführen
+        # execute steps
         GPIO.output(PUL, GPIO.HIGH)
-        time.sleep(frequency / 2) # Hohe frequency --> laengere Pause --> langsamere Drehung\Bewegung
+        time.sleep(frequency / 2) # high frequency --> longer pause --> slow move
         
         GPIO.output(PUL, GPIO.LOW)
         time.sleep(frequency / 2)
         
-        # aktuelle Schrittposition mitzählen
+        # count current steps
         if (steps < 0):
             currentPosition -= 1
         else:
@@ -106,25 +106,30 @@ def moveBy (steps):
     GPIO.output(ENA, ENA_Released)
 
     # end timer
-    ende = time.perf_counter()
-    dauer = ende - start
-    print(f"Benoetigte Zeit: {round(dauer, 2)}s")
+    end = time.perf_counter()
+    time_needed = end - start
+    print(f"Time needed: {round(time_needed, 2)}s")
 
-    return currentPosition
+    return
 
 ######################################################################
 ################################ MAIN ################################
 
-# get inputs from user
-distance = int(input("Distanz in cm: "))
-speed = int(input("Geschwindigkeit in cm/h: "))
+tasks = readInstructions()
+for task in tasks:
+    distance, speed, pause = task.strip().split(",") # cm, cm/h, s
+    
+    distance = float(distance)
+    speed = float(speed)
+    pause = float(pause)
+    
+    steps = distance * 3200 # 3200 steps = 1 cm
+    rpm = 0.2667 * speed # not literal "rounds per minute"
+    frequency = 1 / (rpm / 60 * stepsPerRevolution)
 
-steps = distance * 3200 # 3200 steps = 1 cm
+    print("Move " + str(distance) + "cm with " + str(speed) + "cm/h")
 
-RPM = 0.2667 * speed
-frequency = 1 / (RPM / 60 * stepsPerRevolution)
+    moveBy(steps)
 
-print("Schritte zu bewegen: " + str(steps))
-
-currentPosition = moveBy(steps)
-print("Erreichte Position: " + str(currentPosition))
+    print("Pause for " + str(pause) + "s")
+    time.sleep(pause)
