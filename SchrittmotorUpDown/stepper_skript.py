@@ -123,7 +123,7 @@ for task in tasks:
     speed = float(speed)
     pause = float(pause)
     
-    steps = distance * 3200 # 3200 steps = 1 cm
+    steps = int(distance * 3200) # 3200 steps = 1 cm
     rpm = 0.2667 * speed # not literal "rounds per minute"
     frequency = 1 / (rpm / 60 * stepsPerRevolution)
 

@@ -8,7 +8,7 @@ from secrets import SSID, PASSWORD, SERVER_PORT
 
 
 # Constants
-DEVICE_ID = 'Pico_Werkstatt_2'
+DEVICE_ID = 'Pico_Werkstatt_...'
 
 DELTA_T_MINUTES = 0.25
 
@@ -17,28 +17,34 @@ def connect_wifi():
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
 
-    # wlan.ifconfig((PICO_IP, SUBNET, GATEWAY, DNS)) # Ausprobieren, ob damit feste IP-Adresse möglich ist
-
     if not SSID or SSID == 'your_ssid_here':
         raise RuntimeError('Missing Wi-Fi credentials. Set SSID and PASSWORD in the script.')
 
     print(f'Connecting to Wi-Fi SSID: {SSID}')
-    wlan.connect(SSID, PASSWORD)
 
-    # Wait up to 15 seconds for connection
-    for _ in range(30):
-        if wlan.isconnected():
-            break
-        time.sleep(0.5)
-        print('.', end='')
+    while True:
+        try:
+            if not wlan.isconnected():
+                wlan.connect(SSID, PASSWORD)
 
-    if not wlan.isconnected():
-        raise RuntimeError('Failed to connect to Wi-Fi')
+                # Wait up to 15 seconds for connection
+                for _ in range(15):
+                    if wlan.isconnected():
+                        break
+                    time.sleep(1)
+                    print('.', end='')
 
-    print()
-    print('Connected to Wi-Fi')
-    print('IP address:', wlan.ifconfig()[0])
-    return wlan
+            if wlan.isconnected():
+                print()
+                print('Connected to Wi-Fi')
+                print('IP address:', wlan.ifconfig()[0])
+                return wlan
+                
+        except Exception as e:
+            print(f'\nWi-Fi connection error: {e}')
+
+        print('\nRetrying Wi-Fi connection in 5 seconds...')
+        time.sleep(5)
 
 
 def main():
