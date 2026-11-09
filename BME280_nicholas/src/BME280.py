@@ -282,4 +282,4 @@ class BME280:
     h = self.read_humidity()
     hi = h // 1024
     hd = h * 100 // 1024 - hi * 100
-    return "{}.{:02d}%".format(hi, hd)
+    return "{}.{}".format(hi, hd) # "{}.{:02d}%".format(hi, hd)
