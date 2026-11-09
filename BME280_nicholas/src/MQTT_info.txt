@@ -1,0 +1,40 @@
+für RB:
+    mosquitto installieren
+        sudo apt update
+        sudo apt upgrade
+        sudo apt(-get) install mosquitto mosquitto-clients -y
+
+    test:
+
+        mosquitto_sub -h localhost -t "haus/pico/+/temperatur" -v
+
+    im environment installieren:
+        cd /pfad/zu/deinem/projekt
+        source .venv/bin/activate bzw. .venv\Scripts\activate.bat
+        python -m pip install paho-mqtt
+        python -m pip show paho-mqtt
+
+        (pip install paho-mqtt)
+
+
+
+
+für Pico:
+    Paket installieren:
+
+    Methode 1: Über den Paketmanager in Thonny (Am einfachsten)
+
+        1. Schließe deinen Pico W am PC an und öffne Thonny.
+        2. Klicke im oberen Menü auf Werkzeuge (Tools) -> Pakete verwalten (Manage Packages).
+        3. Gib in das Suchfeld micropython-umqtt.simple ein und klicke auf Suchen.
+        4. Klicke auf das gefundene Paket und wähle Installieren.
+        Thonny lädt die Datei nun automatisch herunter und speichert sie im Ordner /lib/umqtt/ direkt auf deinem Pico ab.
+
+    Methode 2: Direkt über die MicroPython-Konsole (mip)
+
+        Seit neueren MicroPython-Versionen gibt es das Tool mip (das Äquivalent zu pip bei normalem Python). Du kannst die Bibliothek direkt über den Pico aus dem Internet nachladen, sofern dieser mit dem WLAN verbunden ist:
+
+        import mip
+        mip.install("umqtt.simple")
+
+
