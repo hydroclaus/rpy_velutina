@@ -1,26 +1,52 @@
 import time
 import network
 from umqtt.simple import MQTTClient
-
-# WLAN-Zugangsdaten
-WLAN_SSID = "Dein_WLAN_Name"
-WLAN_PASS = "Dein_WLAN_Passwort"
+from secrets import SSID, PASSWORD, SERVER_PORT
 
 # MQTT-Broker IP (IP-Adresse deines zentralen Raspberry Pi)
-MQTT_SERVER = "192.168.1.100"
-CLIENT_ID = "pico_wohnzimmer"
-TOPIC = b"haus/pico/wohnzimmer/temperatur"
+MQTT_SERVER = '192.168.48.116'
 
-# WLAN verbinden
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-wlan.connect(WLAN_SSID, WLAN_PASS)
-while not wlan.isconnected():
-    time.sleep(1)
-print("WLAN verbunden!")
+CLIENT_ID = "pico_..."
+TOPIC = b"haus/pico/.../temperatur"
+KEEP_ALIVE = 60  # Keep-alive in Sekunden
+
+def connect_wifi():
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+
+    if not SSID or SSID == 'your_ssid_here':
+        raise RuntimeError('Missing Wi-Fi credentials. Set SSID and PASSWORD in the script.')
+
+    print(f'Connecting to Wi-Fi SSID: {SSID}')
+
+    while True:
+        try:
+            if not wlan.isconnected():
+                wlan.connect(SSID, PASSWORD)
+
+                # Wait up to 15 seconds for connection
+                for _ in range(15):
+                    if wlan.isconnected():
+                        break
+                    time.sleep(1)
+                    print('.', end='')
+
+            if wlan.isconnected():
+                print()
+                print('Connected to Wi-Fi')
+                print('IP address:', wlan.ifconfig()[0])
+                return wlan
+                
+        except Exception as e:
+            print(f'\nWi-Fi connection error: {e}')
+
+        print('\nRetrying Wi-Fi connection in 5 seconds...')
+        time.sleep(5)
+        
+wlan = connect_wifi()
 
 # MQTT Client initialisieren
-client = MQTTClient(CLIENT_ID, MQTT_SERVER)
+client = MQTTClient(CLIENT_ID, MQTT_SERVER, KEEP_ALIVE)
 client.connect()
 
 try:
@@ -34,7 +60,7 @@ try:
         print(f"Gesendet: {payload}°C")
         
         # Alle 60 Sekunden wiederholen
-        time.sleep(60)
+        time.sleep(30)
 except Exception as e:
     print("Fehler:", e)
     client.disconnect()
