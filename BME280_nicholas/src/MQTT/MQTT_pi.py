@@ -33,7 +33,7 @@ def write_to_influx(line: str) -> None:
 # Empfangs-Funktion
 def on_message(client, userdata, msg):
     line = msg.payload.decode()
-    print(f"{msg.topic} -> {line}")
+    print(f"Empfangen: {line} -> {msg.topic}")
 
     with open(DATA_FILE, 'a') as fp:
         fp.write(f'{now},{line}\n')

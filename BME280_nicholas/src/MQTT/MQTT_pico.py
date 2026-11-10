@@ -39,7 +39,8 @@ def connect_wifi():
                 print()
                 print('Connected to Wi-Fi')
                 print('IP address:', wlan.ifconfig()[0])
-                return wlan
+                print()
+                return
                 
         except Exception as e:
             print(f'\nWi-Fi connection error: {e}')
@@ -47,7 +48,7 @@ def connect_wifi():
         print('\nRetrying Wi-Fi connection in 5 seconds...')
         time.sleep(5)
 
-def get_temperature(time_start):
+def get_measurements(time_start):
     i2c = I2C(id=0, scl=Pin(5), sda=Pin(4))
     
     bme = BME280.BME280(i2c=i2c)
@@ -57,23 +58,25 @@ def get_temperature(time_start):
     # Get sensor readings, temp in °C, presssure in hPa, and humidity in %
     temp = float(bme.temperature) # + ' C'
     pres = float(bme.pressure) #+ ' hPa'
+    hum = 9999
 
     # Prepare data to send (omit time, will be added by server)
-    line = f"{CLIENT_ID},{seconds_since_start:.2f},{temp:.2f},{pres:.2f}\n"
+    line = f"{CLIENT_ID},{seconds_since_start:.2f},{temp:.2f},{pres:.2f},{hum:.2f}"
     
     return line
 
 def main():
-    wlan = connect_wifi()
+    connect_wifi()
 
     # MQTT Client initialisieren
     client = MQTTClient(CLIENT_ID, MQTT_SERVER, keepalive=KEEP_ALIVE)
     client.connect()
+    print("Verbunden mit MQTT-Broker")
 
     try:
         time_start = time.time()
         while True:
-            line = get_temperature(time_start)
+            line = get_measurements(time_start)
             payload = str(line)
             client.publish(TOPIC, payload)
             print(f"Gesendet: {payload}")
