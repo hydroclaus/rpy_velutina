@@ -46,7 +46,7 @@ def connect_wifi():
 wlan = connect_wifi()
 
 # MQTT Client initialisieren
-client = MQTTClient(CLIENT_ID, MQTT_SERVER, KEEP_ALIVE)
+client = MQTTClient(CLIENT_ID, MQTT_SERVER, keepalive=KEEP_ALIVE)
 client.connect()
 
 try:

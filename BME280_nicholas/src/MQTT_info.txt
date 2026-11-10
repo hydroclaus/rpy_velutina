@@ -2,11 +2,31 @@ für RB:
     mosquitto installieren
         sudo apt update
         sudo apt upgrade
-        sudo apt(-get) install mosquitto mosquitto-clients -y
+        sudo apt(-get) install mosquitto mosquitto-clients (-y)
+
+        sudo systemctl enable mosquitto.service # fuer autostart bei start von pi
+
+        sudo nano /etc/mosquitto/mosquitto.conf
+
+        sudo reboot
 
     test:
 
-        mosquitto_sub -h localhost -t "haus/pico/+/temperatur" -v
+        (mosquitto_sub -h localhost -t "haus/pico/+/temperatur" -v)
+
+        Terminal A:
+        mosquitto_sub -d -t "test"
+            • mosquitto_sub: Das Kommandozeilen-Werkzeug von Mosquitto, um Nachrichten von einem MQTT-Broker zu empfangen und zu lesen.
+            • -d (debug): Schaltet den Debug-Modus ein. Damit siehst du im Terminal genau, was im Hintergrund passiert (z. B. den Verbindungsaufbau zum Broker, das Senden von Ping-Anfragen (Keep-Alive) und das Bestätigen von Paketen).
+            • -t "test" (topic): Bestimmt das Thema (Topic), das du abonnieren möchtest. In diesem Fall lautet das Topic exakt test.
+
+        Terminal B:
+        mosquitto_pub -d -t "test" -m "test msg."
+            • mosquitto_pub: Das Kommandozeilen-Werkzeug zum Veröffentlichen (Publish) von MQTT-Nachrichten.
+            • -m "test msg." (message): Der Inhalt der Nachricht, den du senden möchtest. In diesem Fall der Text test msg..
+
+        -h 192.168.178.50 --> wenn nicht lokal
+        -u "dein_username" -P "dein_passwort" --> wenn abgesichert
 
     im environment installieren:
         cd /pfad/zu/deinem/projekt
