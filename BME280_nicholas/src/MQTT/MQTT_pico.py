@@ -1,4 +1,6 @@
 import time
+from machine import Pin, I2C
+import BME280
 import network
 from umqtt.simple import MQTTClient
 from secrets import SSID, PASSWORD, SERVER_PORT
@@ -7,8 +9,10 @@ from secrets import SSID, PASSWORD, SERVER_PORT
 MQTT_SERVER = '192.168.48.116'
 
 CLIENT_ID = "pico_..."
-TOPIC = b"haus/pico/.../temperatur"
+TOPIC = b"vegas/.../temperatur"
 KEEP_ALIVE = 60  # Keep-alive in Sekunden
+
+DELTA_T_MINUTES = 1/6
 
 def connect_wifi():
     wlan = network.WLAN(network.STA_IF)
@@ -42,25 +46,42 @@ def connect_wifi():
 
         print('\nRetrying Wi-Fi connection in 5 seconds...')
         time.sleep(5)
-        
-wlan = connect_wifi()
 
-# MQTT Client initialisieren
-client = MQTTClient(CLIENT_ID, MQTT_SERVER, keepalive=KEEP_ALIVE)
-client.connect()
+def get_temperature(time_start):
+    i2c = I2C(id=0, scl=Pin(5), sda=Pin(4))
+    
+    bme = BME280.BME280(i2c=i2c)
+        
+    seconds_since_start = time.time() - time_start
 
-try:
-    while True:
-        # Hiertemperatur messen (Beispielwert, ersetze dies durch deinen Sensor-Code)
-        temperatur = 21.5 
-        
-        # Daten senden
-        payload = str(temperatur)
-        client.publish(TOPIC, payload)
-        print(f"Gesendet: {payload}°C")
-        
-        # Alle 60 Sekunden wiederholen
-        time.sleep(30)
-except Exception as e:
-    print("Fehler:", e)
-    client.disconnect()
+    # Get sensor readings, temp in °C, presssure in hPa, and humidity in %
+    temp = float(bme.temperature) # + ' C'
+    pres = float(bme.pressure) #+ ' hPa'
+
+    # Prepare data to send (omit time, will be added by server)
+    line = f"{CLIENT_ID},{seconds_since_start:.2f},{temp:.2f},{pres:.2f}\n"
+    
+    return line
+
+def main():
+    wlan = connect_wifi()
+
+    # MQTT Client initialisieren
+    client = MQTTClient(CLIENT_ID, MQTT_SERVER, keepalive=KEEP_ALIVE)
+    client.connect()
+
+    try:
+        time_start = time.time()
+        while True:
+            line = get_temperature(time_start)
+            payload = str(line)
+            client.publish(TOPIC, payload)
+            print(f"Gesendet: {payload}")
+            time.sleep(DELTA_T_MINUTES * 60)
+
+    except Exception as e:
+        print("Fehler:", e)
+        client.disconnect()
+
+if __name__ == '__main__':
+    main()
