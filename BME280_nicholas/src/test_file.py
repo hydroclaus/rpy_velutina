@@ -36,3 +36,39 @@ while True:
             print("Send verification...")
             line = "I'm a Pico\n"
             client.send(line.encode('utf-8'))
+
+#################################################################################################################
+
+import time
+from rich.live import Live
+from rich.table import Table
+
+def generate_display(i):
+    table = Table(title="Live Status")
+
+    table.add_column("Parameter")
+    table.add_column("Wert")
+
+    table.add_row("Status", "Running")
+    table.add_row("Fortschritt", f"{i}%")
+    table.add_row("Durchlauf", f"{i}/100")
+
+    return table
+
+
+with Live(
+    generate_display(0),
+    refresh_per_second=10,
+    transient=False
+) as live:
+
+    for i in range(100):
+
+        # Normale Ausgabe oberhalb der Live-Anzeige
+        if i % 1 == 0:
+            live.console.print(f"[green]Event bei {i}%[/green]")
+
+        # Nur die Live-Anzeige aktualisieren
+        live.update(generate_display(i))
+
+        time.sleep(0.1)
