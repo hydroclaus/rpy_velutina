@@ -58,7 +58,10 @@ def get_measurements(time_start):
     # Get sensor readings, temp in °C, presssure in hPa, and humidity in %
     temp = float(bme.temperature) # + ' C'
     pres = float(bme.pressure) #+ ' hPa'
-    hum = 9999
+    try:
+        hum = float(bme.humidity) #+ ' %'
+    except:
+        hum = 9999
 
     # Prepare data to send (omit time, will be added by server)
     line = f"{CLIENT_ID},{seconds_since_start:.2f},{temp:.2f},{pres:.2f},{hum:.2f}"
