@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 import sys
 import time
+import readchar
 
 ######################################################################
 ############################### SET UP ###############################
@@ -26,9 +27,6 @@ GPIO.setup(ENA, GPIO.OUT)
 # Motor Setup
 STEP_ANGLE = 1.8 # degree
 
-# maximum steps the motor can move from 0 position
-MAX_STEPS = 192000
-
 stepsPerRevolution = 360 / STEP_ANGLE
 
 ######################################################################
@@ -50,6 +48,20 @@ def getCurrentPosition ():
 
 def setCurrentPosition (steps):
     f = open(".position", "w+");
+    f.write(str(steps))
+    f.close()
+
+def getMaxSteps ():
+    try:
+        f = open(".maxSteps", "r")
+        steps = int(f.read())
+        f.close()
+        return steps
+    except:
+        return 0
+
+def setMaxSteps (steps):
+    f = open(".maxSteps", "w+");
     f.write(str(steps))
     f.close()
 
@@ -108,14 +120,91 @@ def moveBy (steps):
     # end timer
     end = time.perf_counter()
     time_needed = end - start
-    print(f"Time needed: {round(time_needed, 2)}s")
+    # print(f"Time needed: {round(time_needed, 2)}s")
 
     return
+
+def calibrateRange ():
+    print("\n######### KEEP A SAFETY DISTANCE OF ~5mm TO THE UPPER AND LOWER LIMITS OF THE RAIL! #########\n")
+    print("Use arrow up/down to move to 0 position.")
+    print("When 0 position reached, press 's' to save 0 position.\n")
+
+    zeroPosition = None
+
+    currentPosition = getCurrentPosition()
+
+    while True:
+        print(f"\rPosition: {currentPosition}                     \033[0J", end="", flush=True)
+
+        taste = readchar.readkey()
+
+        if taste == readchar.key.UP:
+            # print("Pfeil nach OBEN")
+            moveBy(100)
+            currentPosition += 100
+            setCurrentPosition(currentPosition)
+        elif taste == readchar.key.DOWN:
+            # print("Pfeil nach UNTEN")
+            moveBy(-100)
+            currentPosition -= 100
+            setCurrentPosition(currentPosition)
+        elif taste.lower() == "s":
+            if zeroPosition is None:
+                currentPosition = 0
+                setCurrentPosition(currentPosition)
+                print("\rPosition set to 0.\n")
+                time.sleep(1)
+                print("Use arrow up/down to move to max position.")
+                print("When max position reached, press 's' to save max position.\n")
+                zeroPosition = True
+            else:
+                max_pos = currentPosition
+                setMaxSteps(max_pos)
+                print(f"\rMax position set to {max_pos}.\n")
+                time.sleep(1)
+                print("Calibration complete.\nReturning to 0 position...")
+                time.sleep(1)
+                moveBy(-currentPosition)
+                break
+        elif taste == readchar.key.CTRL_C:
+            print("Beendet.")
+            break
 
 ######################################################################
 ################################ MAIN ################################
 
+MAX_STEPS = 192000
+
+cal = input("\nCalibrate stepper motor range?\n(y/n)\n")
+if cal == "y":
+    speed = 800
+    rpm = 0.2667 * speed # not literal "rounds per minute"
+    frequency = 1 / (rpm / 60 * stepsPerRevolution)
+    try:
+        calibrateRange()
+    except KeyboardInterrupt:
+        pass
+    print("\nCheck sequence...\n")
+    time.sleep(1)
+elif cal == "n":
+    pass
+
+# maximum steps the motor can move from 0 position
+MAX_STEPS = getMaxSteps()
+
 tasks = readInstructions()
+
+# Check, if Sequence is within limits
+sum_steps = 0
+for task in tasks:
+    distance, speed, pause = task.strip().split(",") # cm, cm/h
+    sum_steps += int(distance)*3200
+    if sum_steps > MAX_STEPS:
+        raise Warning("Sequence will exceed max position!")
+    elif sum_steps < 0:
+        raise Warning("Sequence will fall below 0 position!")
+
+print("Starting sequence...\n")    
 for task in tasks:
     distance, speed, pause = task.strip().split(",") # cm, cm/h, s
     
