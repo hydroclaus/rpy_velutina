@@ -35,6 +35,8 @@ def on_message(client, userdata, msg):
     line = msg.payload.decode()
     print(f"Empfangen: {line} -> {msg.topic}")
 
+    now = datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')
+
     with open(DATA_FILE, 'a') as fp:
         fp.write(f'{now},{line}\n')
 
@@ -60,11 +62,11 @@ influx_client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_OR
 influx_write_api = influx_client.write_api(write_options=SYNCHRONOUS)
 
 # Create file for storing data on local drive
-now = datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')
+now_file_name = datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')
 data_dir = Path(__file__).resolve().parent / 'data'
 data_dir.mkdir(parents=True, exist_ok=True)
-# DATA_FILE = data_dir / f'sensor_data_{now}.csv'
-DATA_FILE = "/home/claus/Repository/rpy_velutina/BME280_nicholas/src/data/" + f'sensor_data_{now}.csv'
+# DATA_FILE = data_dir / f'sensor_data_{now_file_name}.csv'
+DATA_FILE = "/home/claus/Repository/rpy_velutina/BME280_nicholas/src/data/" + f'sensor_data_{now_file_name}.csv'
 
 # Write header to DATA_FILE
 with open(DATA_FILE, 'w') as fp:
