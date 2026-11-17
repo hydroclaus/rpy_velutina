@@ -181,91 +181,128 @@ def moveBy (steps, motorNr):
     time_needed = end - start
     # print(f"Time needed: {round(time_needed, 2)}s")
 
-def calibrateRange ():
+def calibrateRange (motorNr):
     print("\n######### KEEP A SAFETY DISTANCE OF ~5mm TO THE UPPER AND LOWER LIMITS OF THE RAIL! #########\n")
     print("Use arrow up/down to move to 0 position.")
     print("When 0 position reached, press 's' to save 0 position.\n")
 
     zeroPosition = None
 
-    currentPosition = getCurrentPosition()
+    currentPosition1, currentPosition2 = getCurrentPosition()
+    max1, max2 = getMaxSteps()
 
     while True:
-        print(f"\rPosition: {currentPosition}                     \033[0J", end="", flush=True)
+        if motorNr == 1:
+            print(f"\rPosition: {currentPosition1}                     \033[0J", end="", flush=True)
+        elif motorNr == 2:
+            print(f"\rPosition: {currentPosition2}                     \033[0J", end="", flush=True)
 
         taste = readchar.readkey()
 
         if taste == readchar.key.UP:
             # print("Pfeil nach OBEN")
-            moveBy(100)
-            currentPosition += 100
-            setCurrentPosition(currentPosition)
+            moveBy(100, motorNr)
+            if motorNr == 1:
+                currentPosition1 += 100
+            elif motorNr == 2:
+                currentPosition2 += 100
+            setCurrentPosition(currentPosition1, currentPosition2)
         elif taste == readchar.key.DOWN:
             # print("Pfeil nach UNTEN")
-            moveBy(-100)
-            currentPosition -= 100
-            setCurrentPosition(currentPosition)
+            moveBy(-100, motorNr)
+            if motorNr == 1:
+                currentPosition1 -= 100
+            elif motorNr == 2:
+                currentPosition2 -= 100
+            setCurrentPosition(currentPosition1, currentPosition2)
         elif taste.lower() == "s":
             if zeroPosition is None:
-                currentPosition = 0
-                setCurrentPosition(currentPosition)
+                if motorNr == 1:
+                    currentPosition1 = 0
+                elif motorNr == 2:
+                    currentPosition2 = 0
+                setCurrentPosition(currentPosition1, currentPosition2)
                 print("\rPosition set to 0.\n")
                 time.sleep(1)
                 print("Use arrow up/down to move to max position.")
                 print("When max position reached, press 's' to save max position.\n")
                 zeroPosition = True
             else:
-                max_pos = currentPosition
-                setMaxSteps(max_pos)
-                print(f"\rMax position set to {max_pos}.\n")
+                if motorNr == 1:
+                    max1 = currentPosition1
+                    print(f"\rMax position set to {max1}.\n")
+                elif motorNr == 2:
+                    max2 = currentPosition2
+                    print(f"\rMax position set to {max2}.\n")
+                setMaxSteps(max1, max2)
                 time.sleep(1)
                 print("Calibration complete.\nReturning to 0 position...")
                 time.sleep(1)
-                moveBy(-currentPosition)
+                if motorNr == 1:
+                    moveBy(-currentPosition1, motorNr)
+                elif motorNr == 2:
+                    moveBy(-currentPosition2, motorNr)
                 break
         elif taste == readchar.key.CTRL_C:
             print("Beendet.")
             break
 
-def checkSequence(tasks, MAX_STEPS):    
-    currentPosition = getCurrentPosition()
+def checkSequence(tasks, max1, max2):    
+    currentPosition1, currentPosition2 = getCurrentPosition()
     currentTask = 0
 
     # Check, if Sequence is within limits
     for task in tasks:
         currentTask += 1
         distance, _, _ = task.strip().split(",") # cm
-        currentPosition += int(distance)*3200
-        if currentPosition > MAX_STEPS:
-            raise Warning(f"Sequence will exceed max position while performing task {currentTask}!")
-        elif currentPosition < 0:
-            raise Warning(f"Sequence will fall below 0 position while performing task {currentTask}!")
+        currentPosition1 += int(distance)*3200
+        currentPosition2 += int(distance)*3200
+        if currentPosition1 > max1:
+            raise Warning(f"Sequence will exceed max position of motor nr. 1 while performing task {currentTask}!")
+        if currentPosition2 > max2:
+            raise Warning(f"Sequence will exceed max position of motor nr. 2 while performing task {currentTask}!")
+        if currentPosition1 < 0:
+            raise Warning(f"Sequence will fall below 0 position of motor nr. 1 while performing task {currentTask}!")
+        if currentPosition2 < 0:
+            raise Warning(f"Sequence will fall below 0 position of motor nr. 2 while performing task {currentTask}!")
 
 ######################################################################
 ################################ MAIN ################################
 
-MAX_STEPS = 192000 # max amount of steps, if slider at lowest position
+# MAX_STEPS = 192000 # max amount of steps, if slider at lowest position
 
-cal = input("\nCalibrate stepper motor range?\n(y/n)\n")
+cal = input("\nCalibrate stepper motor nr. 1 range?\n(y/n)\n")
 if cal == "y":
     speed = 800
     rpm = 0.2667 * speed # not literal "rounds per minute"
     frequency = 1 / (rpm / 60 * stepsPerRevolution)
     try:
-        calibrateRange()
+        calibrateRange(motorNr=1)
+    except KeyboardInterrupt:
+        pass
+elif cal == "n":
+    pass
+
+cal = input("\nCalibrate stepper motor nr. 2 range?\n(y/n)\n")
+if cal == "y":
+    speed = 800
+    rpm = 0.2667 * speed # not literal "rounds per minute"
+    frequency = 1 / (rpm / 60 * stepsPerRevolution)
+    try:
+        calibrateRange(motorNr=2)
     except KeyboardInterrupt:
         pass
 elif cal == "n":
     pass
 
 # maximum steps the motor can move from 0 position
-MAX_STEPS = getMaxSteps()
+max1, max2 = getMaxSteps()
 
 tasks = readInstructions()
 
 print("\nCheck sequence...\n")
 time.sleep(1)
-checkSequence(tasks, MAX_STEPS)
+checkSequence(tasks, max1, max2)
 
 print("Starting sequence...\n")    
 for task in tasks:
@@ -281,7 +318,7 @@ for task in tasks:
 
     print("Move " + str(distance) + "cm with " + str(speed) + "cm/h")
 
-    moveBy(steps)
+    moveBy(steps, 3)
 
     print("Pause for " + str(pause) + "s")
     time.sleep(pause)
