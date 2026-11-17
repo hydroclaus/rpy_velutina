@@ -35,7 +35,7 @@ stepsPerRevolution = 360 / STEP_ANGLE
 def readInstructions ():
     with open(".sequence", "r") as f:
         tasks = f.readlines()
-    return tasks
+    return tasks[1:]
 
 def getCurrentPosition ():
     try:
@@ -170,10 +170,24 @@ def calibrateRange ():
             print("Beendet.")
             break
 
+def checkSequence(tasks, MAX_STEPS):    
+    currentPosition = getCurrentPosition()
+    currentTask = 0
+
+    # Check, if Sequence is within limits
+    for task in tasks:
+        currentTask += 1
+        distance, _, _ = task.strip().split(",") # cm
+        currentPosition += int(distance)*3200
+        if currentPosition > MAX_STEPS:
+            raise Warning(f"Sequence will exceed max position while performing task {currentTask}!")
+        elif currentPosition < 0:
+            raise Warning(f"Sequence will fall below 0 position while performing task {currentTask}!")
+
 ######################################################################
 ################################ MAIN ################################
 
-MAX_STEPS = 192000
+MAX_STEPS = 192000 # max amount of steps, if slider at lowest position
 
 cal = input("\nCalibrate stepper motor range?\n(y/n)\n")
 if cal == "y":
@@ -184,8 +198,6 @@ if cal == "y":
         calibrateRange()
     except KeyboardInterrupt:
         pass
-    print("\nCheck sequence...\n")
-    time.sleep(1)
 elif cal == "n":
     pass
 
@@ -194,15 +206,9 @@ MAX_STEPS = getMaxSteps()
 
 tasks = readInstructions()
 
-# Check, if Sequence is within limits
-sum_steps = 0
-for task in tasks:
-    distance, speed, pause = task.strip().split(",") # cm, cm/h
-    sum_steps += int(distance)*3200
-    if sum_steps > MAX_STEPS:
-        raise Warning("Sequence will exceed max position!")
-    elif sum_steps < 0:
-        raise Warning("Sequence will fall below 0 position!")
+print("\nCheck sequence...\n")
+time.sleep(1)
+checkSequence(tasks, MAX_STEPS)
 
 print("Starting sequence...\n")    
 for task in tasks:
