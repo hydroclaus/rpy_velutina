@@ -14,9 +14,9 @@ DIR = 33
 PUL = 35
 ENA = 37
 # Motor 2
-# DIR2 = ...
-# PUL2 = ...
-# ENA2 = ...
+DIR2 = ...
+PUL2 = ...
+ENA2 = ...
 
 DIR_Left = GPIO.HIGH
 DIR_Right = GPIO.LOW
@@ -30,9 +30,9 @@ GPIO.setup(DIR, GPIO.OUT)
 GPIO.setup(PUL, GPIO.OUT)
 GPIO.setup(ENA, GPIO.OUT)
 # Motor 2
-# GPIO.setup(DIR2, GPIO.OUT)
-# GPIO.setup(PUL2, GPIO.OUT)
-# GPIO.setup(ENA2, GPIO.OUT)
+GPIO.setup(DIR2, GPIO.OUT)
+GPIO.setup(PUL2, GPIO.OUT)
+GPIO.setup(ENA2, GPIO.OUT)
 
 # Motor Setup
 STEP_ANGLE = 1.8 # degree
@@ -50,43 +50,49 @@ def readInstructions ():
 def getCurrentPosition ():
     try:
         f = open(".position", "r")
-        steps = int(f.read())
+        pos1, pos2 = map(int, f.readline().split(","))
         f.close()
-        return steps
+        return pos1, pos2
     except:
-        return 0
+        return 0, 0
 
-def setCurrentPosition (steps):
+def setCurrentPosition (pos1, pos2):
     f = open(".position", "w+");
-    f.write(str(steps))
+    f.write(str(pos1) + "," + str(pos2))
     f.close()
 
 def getMaxSteps ():
     try:
         f = open(".maxSteps", "r")
-        steps = int(f.read())
+        max1, max2 = map(int, f.readline().split(","))
         f.close()
-        return steps
+        return max1, max2
     except:
-        return 0
+        return 0, 0
 
-def setMaxSteps (steps):
+def setMaxSteps (max1, max2):
     f = open(".maxSteps", "w+");
-    f.write(str(steps))
+    f.write(str(max1) + "," + str(max2))
     f.close()
 
 # turn motor by number of steps
-def moveBy (steps):
-    GPIO.output(ENA, ENA_Locked)
+def moveBy (steps, motorNr):
+    if motorNr == 1:
+        GPIO.output(ENA, ENA_Locked)
+    elif motorNr == 2:
+        GPIO.output(ENA2, ENA_Locked)
+    elif motorNr == 3:
+        GPIO.output(ENA, ENA_Locked)
+        GPIO.output(ENA2, ENA_Locked)
 
-    currentPosition = getCurrentPosition()
+    currentPosition1, currentPosition2 = getCurrentPosition()
 
     # calculate relative steps
-    targetPosition = currentPosition + steps
-    if (targetPosition > MAX_STEPS):
-        steps = MAX_STEPS - currentPosition
-    if (targetPosition < 0):
-        steps = currentPosition * -1
+    # targetPosition = currentPosition + steps
+    # if (targetPosition > MAX_STEPS):
+    #     steps = MAX_STEPS - currentPosition
+    # if (targetPosition < 0):
+    #     steps = currentPosition * -1
 
     # start timer
     start = time.perf_counter()
@@ -94,45 +100,86 @@ def moveBy (steps):
     for i in range(abs(steps)):
         
         # stop if upper limit reached
-        if (steps >= 0 and currentPosition >= MAX_STEPS):
-            GPIO.output(ENA, ENA_Released)
-            setCurrentPosition(currentPosition)
-            return currentPosition
+        # if (steps >= 0 and currentPosition >= MAX_STEPS):
+        #     GPIO.output(ENA, ENA_Released)
+        #     setCurrentPosition(currentPosition)
+        #     return currentPosition
 
         # stop if lower limit reached
-        if (steps < 0 and currentPosition <= 0):
-            GPIO.output(ENA, ENA_Released)
-            setCurrentPosition(currentPosition)
-            return currentPosition
+        # if (steps < 0 and currentPosition <= 0):
+        #     GPIO.output(ENA, ENA_Released)
+        #     setCurrentPosition(currentPosition)
+        #     return currentPosition
 
         # set direction to move (up or down)
         if (steps < 0):
-            GPIO.output(DIR, DIR_Right)
+            if motorNr == 1:
+                GPIO.output(DIR, DIR_Right)
+            elif motorNr == 2:
+                GPIO.output(DIR2, DIR_Right)
+            elif motorNr == 3:
+                GPIO.output(DIR, DIR_Right)
+                GPIO.output(DIR2, DIR_Right)
         else:
-            GPIO.output(DIR, DIR_Left)
+            if motorNr == 1:
+                GPIO.output(DIR, DIR_Left)
+            elif motorNr == 2:
+                GPIO.output(DIR2, DIR_Left)
+            elif motorNr == 3:
+                GPIO.output(DIR, DIR_Left)
+                GPIO.output(DIR2, DIR_Left)
 
         # execute steps
-        GPIO.output(PUL, GPIO.HIGH)
-        time.sleep(frequency / 2) # high frequency --> longer pause --> slow move
-        
-        GPIO.output(PUL, GPIO.LOW)
-        time.sleep(frequency / 2)
+        if motorNr == 1:
+            GPIO.output(PUL, GPIO.HIGH)
+            time.sleep(frequency / 2) # high frequency --> longer pause --> slow move
+            GPIO.output(PUL, GPIO.LOW)
+            time.sleep(frequency / 2)
+        elif motorNr == 2:
+            GPIO.output(PUL2, GPIO.HIGH)
+            time.sleep(frequency / 2) # high frequency --> longer pause --> slow move
+            GPIO.output(PUL2, GPIO.LOW)
+            time.sleep(frequency / 2)
+        elif motorNr == 3:
+            GPIO.output(PUL, GPIO.HIGH)
+            GPIO.output(PUL2, GPIO.HIGH)
+            time.sleep(frequency / 2) # high frequency --> longer pause --> slow move
+            GPIO.output(PUL, GPIO.LOW)
+            GPIO.output(PUL2, GPIO.LOW)
+            time.sleep(frequency / 2)
         
         # count current steps
         if (steps < 0):
-            currentPosition -= 1
+            if motorNr == 1:
+                currentPosition1 -= 1
+            elif motorNr ==2:
+                currentPosition2 -= 1
+            elif motorNr == 3:
+                currentPosition1 -= 1
+                currentPosition2 -= 1
         else:
-            currentPosition += 1
+            if motorNr == 1:
+                currentPosition1 += 1
+            elif motorNr ==2:
+                currentPosition2 += 1
+            elif motorNr == 3:
+                currentPosition1 += 1
+                currentPosition2 += 1
 
-    setCurrentPosition(currentPosition)
-    GPIO.output(ENA, ENA_Released)
+    setCurrentPosition(currentPosition1, currentPosition2)
+    
+    if motorNr == 1:
+        GPIO.output(ENA, ENA_Released)
+    elif motorNr == 2:
+        GPIO.output(ENA2, ENA_Released)
+    elif motorNr == 3:
+        GPIO.output(ENA, ENA_Released)
+        GPIO.output(ENA2, ENA_Released)
 
     # end timer
     end = time.perf_counter()
     time_needed = end - start
     # print(f"Time needed: {round(time_needed, 2)}s")
-
-    return
 
 def calibrateRange ():
     print("\n######### KEEP A SAFETY DISTANCE OF ~5mm TO THE UPPER AND LOWER LIMITS OF THE RAIL! #########\n")
