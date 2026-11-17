@@ -182,7 +182,7 @@ def moveBy (steps, motorNr):
     # print(f"Time needed: {round(time_needed, 2)}s")
 
 def calibrateRange (motorNr):
-    print("\n######### KEEP A SAFETY DISTANCE OF ~5mm TO THE UPPER AND LOWER LIMITS OF THE RAIL! #########\n")
+    print("\n######### KEEP A SAFETY DISTANCE OF ~5mm TO THE UPPER AND LOWER LIMIT OF THE RAIL! #########\n")
     print("Use arrow up/down to move to 0 position.")
     print("When 0 position reached, press 's' to save 0 position.\n")
 
