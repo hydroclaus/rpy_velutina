@@ -9,9 +9,14 @@ import readchar
 GPIO.setmode(GPIO.BOARD)
 
 # TB6600 Driver Setup
+# Motor 1
 DIR = 33
 PUL = 35
 ENA = 37
+# Motor 2
+# DIR2 = ...
+# PUL2 = ...
+# ENA2 = ...
 
 DIR_Left = GPIO.HIGH
 DIR_Right = GPIO.LOW
@@ -20,9 +25,14 @@ ENA_Locked = GPIO.LOW
 ENA_Released = GPIO.HIGH
 
 GPIO.setwarnings(False)
+# Motor 1
 GPIO.setup(DIR, GPIO.OUT)
 GPIO.setup(PUL, GPIO.OUT)
 GPIO.setup(ENA, GPIO.OUT)
+# Motor 2
+# GPIO.setup(DIR2, GPIO.OUT)
+# GPIO.setup(PUL2, GPIO.OUT)
+# GPIO.setup(ENA2, GPIO.OUT)
 
 # Motor Setup
 STEP_ANGLE = 1.8 # degree
