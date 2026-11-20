@@ -1,7 +1,12 @@
 import RPi.GPIO as GPIO
-import sys
 import time
 import readchar
+
+import os
+from pathlib import Path
+
+# change directory to folder including this script
+os.chdir(Path(__file__).resolve().parent)
 
 ######################################################################
 ############################### SET UP ###############################
@@ -9,14 +14,15 @@ import readchar
 GPIO.setmode(GPIO.BOARD)
 
 # TB6600 Driver Setup
+# set the pins on the raspberry for the connection to the motors
 # Motor 1
 DIR = 33
 PUL = 35
 ENA = 37
 # Motor 2
-DIR2 = ...
-PUL2 = ...
-ENA2 = ...
+DIR2 = 11
+PUL2 = 12
+ENA2 = 13
 
 DIR_Left = GPIO.HIGH
 DIR_Right = GPIO.LOW
@@ -39,14 +45,18 @@ STEP_ANGLE = 1.8 # degree
 
 stepsPerRevolution = 360 / STEP_ANGLE
 
+# !! 3200 steps = 1 cm !! 
+
 ######################################################################
 ############################## FUNCTIONS #############################
 
+# read the predefined sequence of movement of the .sequence file
 def readInstructions ():
     with open(".sequence", "r") as f:
         tasks = f.readlines()
     return tasks[1:]
 
+# get the last saved position of the motors
 def getCurrentPosition ():
     try:
         f = open(".position", "r")
@@ -56,11 +66,13 @@ def getCurrentPosition ():
     except:
         return 0, 0
 
+# set the current position of the motors
 def setCurrentPosition (pos1, pos2):
     f = open(".position", "w+");
     f.write(str(pos1) + "," + str(pos2))
     f.close()
 
+# get the last saved max position of the motors till which they can move
 def getMaxSteps ():
     try:
         f = open(".maxSteps", "r")
@@ -70,6 +82,7 @@ def getMaxSteps ():
     except:
         return 0, 0
 
+# set the chosen max position of the motors till which they can move
 def setMaxSteps (max1, max2):
     f = open(".maxSteps", "w+");
     f.write(str(max1) + "," + str(max2))
@@ -181,6 +194,7 @@ def moveBy (steps, motorNr):
     time_needed = end - start
     # print(f"Time needed: {round(time_needed, 2)}s")
 
+# calibrate the range in which the motors can move
 def calibrateRange (motorNr):
     print("\n######### KEEP A SAFETY DISTANCE OF ~5mm TO THE UPPER AND LOWER LIMIT OF THE RAIL! #########\n")
     print("Use arrow up/down to move to 0 position.")
@@ -247,6 +261,7 @@ def calibrateRange (motorNr):
             print("Beendet.")
             break
 
+# check if the sequence is running within the chosen range
 def checkSequence(tasks, max1, max2):    
     currentPosition1, currentPosition2 = getCurrentPosition()
     currentTask = 0
@@ -295,7 +310,6 @@ if cal == "y":
 elif cal == "n":
     pass
 
-# maximum steps the motor can move from 0 position
 max1, max2 = getMaxSteps()
 
 tasks = readInstructions()
