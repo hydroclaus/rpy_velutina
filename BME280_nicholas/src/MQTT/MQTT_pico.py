@@ -12,10 +12,11 @@ CLIENT_ID = "pico_..."
 TOPIC = b"vegas/.../temperatur"
 KEEP_ALIVE = 60  # Keep-alive in Sekunden
 
-DELTA_T_MINUTES = 1/6
+DELTA_T_MINUTES = 1
+
+wlan = network.WLAN(network.STA_IF)
 
 def connect_wifi():
-    wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
 
     if not SSID or SSID == 'your_ssid_here':
@@ -68,26 +69,46 @@ def get_measurements(time_start):
     
     return line
 
-def main():
-    connect_wifi()
-
+def connect_mqtt():
     # MQTT Client initialisieren
     client = MQTTClient(CLIENT_ID, MQTT_SERVER, keepalive=KEEP_ALIVE)
     client.connect()
     print("Verbunden mit MQTT-Broker")
 
-    try:
-        time_start = time.time()
-        while True:
+    return client
+
+def main():
+    time_start = time.time()
+    client = None
+
+    while True:
+        if wlan.isconnected():
+            pass
+        else:
+            connect_wifi()
+
+        try:
+            if client is None:
+                client = connect_mqtt()
+
             line = get_measurements(time_start)
             payload = str(line)
             client.publish(TOPIC, payload)
             print(f"Gesendet: {payload}")
+
             time.sleep(DELTA_T_MINUTES * 60)
 
-    except Exception as e:
-        print("Fehler:", e)
-        client.disconnect()
+        except Exception as e:
+            print("Fehler:", e)
+            if client is not None:
+                try:
+                    client.disconnect()
+                except:
+                    pass
+                client = None
+
+            print("Wait 10 seconds before reconnectiong...")
+            time.sleep(10)
 
 if __name__ == '__main__':
     main()
