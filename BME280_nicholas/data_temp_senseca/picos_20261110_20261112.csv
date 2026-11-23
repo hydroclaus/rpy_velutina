@@ -1,6 +1,3 @@
-#group,false,false,true,true,false,false,true,true,true
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string
-#default,_result,,,,,,,,
 ,result,table,_start,_stop,_time,_value,DEVICE_ID,_field,_measurement
 ,,0,2026-11-10T15:00:00Z,2026-11-12T11:00:00Z,2026-11-10T15:29:12.185645916Z,23.27,pico_2,temp_c,TechnikumTP
 ,,0,2026-11-10T15:00:00Z,2026-11-12T11:00:00Z,2026-11-10T15:30:12.157509173Z,19.47,pico_2,temp_c,TechnikumTP
