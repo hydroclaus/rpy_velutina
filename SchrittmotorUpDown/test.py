@@ -192,7 +192,7 @@ def moveBy (steps, motorNr):
     # end timer
     end = time.perf_counter()
     time_needed = end - start
-    # print(f"Time needed: {round(time_needed, 2)}s")
+    print(f"Time needed: {round(time_needed, 2)}s\n")
 
 def moveSimple (steps, motorNr):
     for i in range(steps):
@@ -341,6 +341,9 @@ def checkSequence(tasks, max1, max2):
 
 ######################################################################
 ################################ MAIN ################################
+
+GPIO.output(ENA, ENA_Released)
+GPIO.output(ENA2, ENA_Released)
 
 # MAX_STEPS = 192000 # max amount of steps, if slider at lowest position
 speed = 4000
