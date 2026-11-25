@@ -194,12 +194,31 @@ def moveBy (steps, motorNr):
     time_needed = end - start
     # print(f"Time needed: {round(time_needed, 2)}s")
 
+def moveSimple (steps, motorNr):
+    for i in range(steps):
+        if motorNr == 1:
+            GPIO.output(PUL, GPIO.HIGH)
+            time.sleep(frequency / 2) # high frequency --> longer pause --> slow move
+            GPIO.output(PUL, GPIO.LOW)
+            time.sleep(frequency / 2)
+        elif motorNr == 2:
+            GPIO.output(PUL2, GPIO.HIGH)
+            time.sleep(frequency / 2) # high frequency --> longer pause --> slow move
+            GPIO.output(PUL2, GPIO.LOW)
+            time.sleep(frequency / 2)
+
 # calibrate the range in which the motors can move
 def calibrateRange (motorNr):
+    cal = input(f"\nCalibrate stepper motor nr. {motorNr} range?\n(y/n)\n")
+    if cal == "y":
+        pass
+    else:
+        return
+
     print("\n######### KEEP A SAFETY DISTANCE OF ~5mm TO THE UPPER AND LOWER LIMIT OF THE RAIL! #########\n")
     print("Use arrow up/down to move to 0 position.")
     print("When 0 position reached, press 's' to save 0 position.\n")
-
+    
     zeroPosition = None
 
     currentPosition1, currentPosition2 = getCurrentPosition()
@@ -211,107 +230,92 @@ def calibrateRange (motorNr):
         GPIO.output(ENA2, ENA_Locked)
 
     while True:
-        if motorNr == 1:
-            print(f"\rPosition: {currentPosition1}                     \033[0J", end="", flush=True)
-        elif motorNr == 2:
-            print(f"\rPosition: {currentPosition2}                     \033[0J", end="", flush=True)
-
-        taste = readchar.readkey()
-
-        if taste == readchar.key.UP:
-            # print("Pfeil nach OBEN")
-
+        try:
             if motorNr == 1:
-                GPIO.output(DIR, DIR_Left)
+                print(f"\rPosition: {currentPosition1}                     \033[0J", end="", flush=True)
             elif motorNr == 2:
-                GPIO.output(DIR2, DIR_Left)
+                print(f"\rPosition: {currentPosition2}                     \033[0J", end="", flush=True)
 
-            if motorNr == 1:
-                GPIO.output(PUL, GPIO.HIGH)
-                time.sleep(frequency / 2) # high frequency --> longer pause --> slow move
-                GPIO.output(PUL, GPIO.LOW)
-                time.sleep(frequency / 2)
-            elif motorNr == 2:
-                GPIO.output(PUL2, GPIO.HIGH)
-                time.sleep(frequency / 2) # high frequency --> longer pause --> slow move
-                GPIO.output(PUL2, GPIO.LOW)
-                time.sleep(frequency / 2)
+            taste = readchar.readkey()
 
-            if motorNr == 1:
-                currentPosition1 += 1
-            elif motorNr == 2:
-                currentPosition2 += 1
+            steps = 100
 
-            setCurrentPosition(currentPosition1, currentPosition2)
+            if taste == readchar.key.UP:
+                # print("Pfeil nach OBEN")
 
-        elif taste == readchar.key.DOWN:
-            # print("Pfeil nach UNTEN")
-
-            if motorNr == 1:
-                GPIO.output(DIR, DIR_Right)
-            elif motorNr == 2:
-                GPIO.output(DIR2, DIR_Right)
-
-            if motorNr == 1:
-                GPIO.output(PUL, GPIO.HIGH)
-                time.sleep(frequency / 2) # high frequency --> longer pause --> slow move
-                GPIO.output(PUL, GPIO.LOW)
-                time.sleep(frequency / 2)
-            elif motorNr == 2:
-                GPIO.output(PUL2, GPIO.HIGH)
-                time.sleep(frequency / 2) # high frequency --> longer pause --> slow move
-                GPIO.output(PUL2, GPIO.LOW)
-                time.sleep(frequency / 2)
-
-            if motorNr == 1:
-                currentPosition1 -= 1
-            elif motorNr == 2:
-                currentPosition2 -= 1
-
-            setCurrentPosition(currentPosition1, currentPosition2)
-
-        elif taste.lower() == "s":
-            if zeroPosition is None:
                 if motorNr == 1:
-                    currentPosition1 = 0
+                    GPIO.output(DIR, DIR_Left)
                 elif motorNr == 2:
-                    currentPosition2 = 0
+                    GPIO.output(DIR2, DIR_Left)
+
+                moveSimple(steps, motorNr)
+
+                if motorNr == 1:
+                    currentPosition1 += steps
+                elif motorNr == 2:
+                    currentPosition2 += steps
+
                 setCurrentPosition(currentPosition1, currentPosition2)
-                print("\rPosition set to 0.\n")
-                time.sleep(1)
-                print("Use arrow up/down to move to max position.")
-                print("When max position reached, press 's' to save max position.\n")
-                zeroPosition = True
-            else:
-                if motorNr == 1:
-                    max1 = currentPosition1
-                    print(f"\rMax position set to {max1}.\n")
-                elif motorNr == 2:
-                    max2 = currentPosition2
-                    print(f"\rMax position set to {max2}.\n")
-                setMaxSteps(max1, max2)
-                time.sleep(1)
-                print("Calibration complete.\nReturning to 0 position...")
-                time.sleep(1)
-                if motorNr == 1:
-                    moveBy(-currentPosition1, motorNr)
-                elif motorNr == 2:
-                    moveBy(-currentPosition2, motorNr)
+
+            elif taste == readchar.key.DOWN:
+                # print("Pfeil nach UNTEN")
 
                 if motorNr == 1:
-                    GPIO.output(ENA, ENA_Released)
+                    GPIO.output(DIR, DIR_Right)
                 elif motorNr == 2:
-                    GPIO.output(ENA2, ENA_Released)
+                    GPIO.output(DIR2, DIR_Right)
 
-                break
+                moveSimple(steps, motorNr)
 
-        elif taste == readchar.key.CTRL_C:
-            print("Beendet.")
+                if motorNr == 1:
+                    currentPosition1 -= steps
+                elif motorNr == 2:
+                    currentPosition2 -= steps
+
+                setCurrentPosition(currentPosition1, currentPosition2)
+
+            elif taste.lower() == "s":
+                if zeroPosition is None:
+                    if motorNr == 1:
+                        currentPosition1 = 0
+                    elif motorNr == 2:
+                        currentPosition2 = 0
+                    setCurrentPosition(currentPosition1, currentPosition2)
+                    print("\rPosition set to 0.\n")
+                    time.sleep(1)
+                    print("Use arrow up/down to move to max position.")
+                    print("When max position reached, press 's' to save max position.\n")
+                    zeroPosition = True
+                else:
+                    if motorNr == 1:
+                        max1 = currentPosition1
+                        print(f"\rMax position set to {max1}.\n")
+                    elif motorNr == 2:
+                        max2 = currentPosition2
+                        print(f"\rMax position set to {max2}.\n")
+                    setMaxSteps(max1, max2)
+                    time.sleep(1)
+                    print("Calibration complete.\nReturning to 0 position...")
+                    time.sleep(1)
+                    if motorNr == 1:
+                        moveBy(-currentPosition1, motorNr)
+                    elif motorNr == 2:
+                        moveBy(-currentPosition2, motorNr)
+
+                    if motorNr == 1:
+                        GPIO.output(ENA, ENA_Released)
+                    elif motorNr == 2:
+                        GPIO.output(ENA2, ENA_Released)
+
+                    break
+        except KeyboardInterrupt:
+            print("\nBeendet.")
 
             if motorNr == 1:
                 GPIO.output(ENA, ENA_Released)
             elif motorNr == 2:
                 GPIO.output(ENA2, ENA_Released)
+            print("\nMotor released.")
     
             break
 
@@ -339,30 +343,12 @@ def checkSequence(tasks, max1, max2):
 ################################ MAIN ################################
 
 # MAX_STEPS = 192000 # max amount of steps, if slider at lowest position
+speed = 4000
+rpm = 0.2667 * speed # not literal "rounds per minute"
+frequency = 1 / (rpm / 60 * stepsPerRevolution)
 
-cal = input("\nCalibrate stepper motor nr. 1 range?\n(y/n)\n")
-if cal == "y":
-    speed = 800
-    rpm = 0.2667 * speed # not literal "rounds per minute"
-    frequency = 1 / (rpm / 60 * stepsPerRevolution)
-    try:
-        calibrateRange(motorNr=1)
-    except KeyboardInterrupt:
-        pass
-elif cal == "n":
-    pass
-
-cal = input("\nCalibrate stepper motor nr. 2 range?\n(y/n)\n")
-if cal == "y":
-    speed = 800
-    rpm = 0.2667 * speed # not literal "rounds per minute"
-    frequency = 1 / (rpm / 60 * stepsPerRevolution)
-    try:
-        calibrateRange(motorNr=2)
-    except KeyboardInterrupt:
-        pass
-elif cal == "n":
-    pass
+calibrateRange(motorNr=1)
+calibrateRange(motorNr=2)
 
 max1, max2 = getMaxSteps()
 
